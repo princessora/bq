@@ -41,30 +41,34 @@
                         android:background="@color/q1_header"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:padding="8dp">
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/cat_quad1" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="① 重要 · 紧急"
+                            android:text="重要·紧急"
                             android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/cat_quad1" />
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
                         <Button
                             android:id="@+id/add1"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="4dp"
                             android:padding="0dp"
                             android:text="+"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
 
@@ -91,30 +95,34 @@
                         android:background="@color/q2_header"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:padding="8dp">
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/cat_quad2" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="② 重要 · 不急"
+                            android:text="重要·不急"
                             android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/cat_quad2" />
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
                         <Button
                             android:id="@+id/add2"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="4dp"
                             android:padding="0dp"
                             android:text="+"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
 
@@ -149,30 +157,34 @@
                         android:background="@color/q3_header"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:padding="8dp">
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/cat_quad3" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="③ 不重要 · 紧急"
+                            android:text="不重要·紧急"
                             android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/cat_quad3" />
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
                         <Button
                             android:id="@+id/add3"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="4dp"
                             android:padding="0dp"
                             android:text="+"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
 
@@ -199,30 +211,34 @@
                         android:background="@color/q4_header"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:padding="8dp">
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="6dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/cat_quad4" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="④ 不重要 · 不急"
+                            android:text="不重要·不急"
                             android:textColor="#FFFFFF"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:layout_marginEnd="6dp"
-                            android:src="@drawable/cat_quad4" />
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:maxLines="1"
+                            android:ellipsize="end" />
 
                         <Button
                             android:id="@+id/add4"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="4dp"
                             android:padding="0dp"
                             android:text="+"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
 

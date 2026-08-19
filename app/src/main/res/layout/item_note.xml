@@ -15,55 +15,55 @@
         android:textColor="@color/ink"
         android:textSize="15sp" />
 
-    <HorizontalScrollView
+    <!-- 四个按钮等宽平分，永远全部显示，不滚动 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:scrollbars="none">
+        android:orientation="horizontal"
+        android:weightSum="4">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="改"
+            android:textSize="11sp" />
 
-            <Button
-                android:id="@+id/btnEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginEnd="5dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:text="改"
-                android:textSize="11sp" />
+        <Button
+            android:id="@+id/btnColor"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="色"
+            android:textSize="11sp" />
 
-            <Button
-                android:id="@+id/btnColor"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginEnd="5dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:text="色"
-                android:textSize="11sp" />
+        <Button
+            android:id="@+id/btnMove"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="移"
+            android:textSize="11sp" />
 
-            <Button
-                android:id="@+id/btnMove"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginEnd="5dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:text="移"
-                android:textSize="11sp" />
-
-            <Button
-                android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="8dp"
-                android:text="删"
-                android:textSize="11sp" />
-        </LinearLayout>
-    </HorizontalScrollView>
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="删"
+            android:textSize="11sp" />
+    </LinearLayout>
 </LinearLayout>
