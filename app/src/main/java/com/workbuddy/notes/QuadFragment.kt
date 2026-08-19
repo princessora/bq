@@ -81,9 +81,16 @@ class QuadFragment : Fragment() {
                             onColor = { cycleColor(note) },
                             onMove = { showMove(note) },
                             onDelete = {
-                                notes.remove(note)
-                                persist()
-                                refresh()
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle("确认删除")
+                                    .setMessage("确定要删除这条便签吗？")
+                                    .setPositiveButton("删除") { _, _ ->
+                                        notes.remove(note)
+                                        persist()
+                                        refresh()
+                                    }
+                                    .setNegativeButton("取消", null)
+                                    .show()
                             }
                         )
                     )

@@ -5,4 +5,17 @@
     <color name="surface">#FFFFFF</color>
     <color name="ink">#212121</color>
     <color name="ink_sub">#757575</color>
+
+    <!-- 四象限主题色 -->
+    <color name="q1_header">#C62828</color>
+    <color name="q1_light">#FFEBEE</color>
+    <color name="q2_header">#EF6C00</color>
+    <color name="q2_light">#FFF3E0</color>
+    <color name="q3_header">#1565C0</color>
+    <color name="q3_light">#E3F2FD</color>
+    <color name="q4_header">#2E7D32</color>
+    <color name="q4_light">#E8F5E9</color>
+
+    <!-- 半透明遮罩:深色背景图适配,30%白让人物透出,文字仍可读 -->
+    <color name="scrim">#4DFFFFFF</color>
 </resources>

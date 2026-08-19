@@ -1,189 +1,241 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg">
+    android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_anime" />
 
-        <!-- 第一行：象限 ①② -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/scrim">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:orientation="vertical"
+            android:padding="8dp">
 
+            <!-- 第一行：象限 ①② -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:weightSum="2">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@color/brand"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="① 重要 · 紧急"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
+                        android:background="@color/q1_header"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
 
-                    <Button
-                        android:id="@+id/add1"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:padding="0dp"
-                        android:text="+"
-                        android:textSize="20sp"
-                        android:textColor="#FFFFFF" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="① 重要 · 紧急"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/cat_quad1" />
+
+                        <Button
+                            android:id="@+id/add1"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="0dp"
+                            android:text="+"
+                            android:textSize="18sp"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/zone1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q1_light"
+                        android:minHeight="90dp"
+                        android:orientation="vertical"
+                        android:padding="4dp" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/zone1"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="4dp" />
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q2_header"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="② 重要 · 不急"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/cat_quad2" />
+
+                        <Button
+                            android:id="@+id/add2"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="0dp"
+                            android:text="+"
+                            android:textSize="18sp"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/zone2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q2_light"
+                        android:minHeight="90dp"
+                        android:orientation="vertical"
+                        android:padding="4dp" />
+                </LinearLayout>
             </LinearLayout>
 
+            <!-- 第二行：象限 ③④ -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:weightSum="2">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@color/brand"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="② 重要 · 不紧急"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
+                        android:background="@color/q3_header"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
 
-                    <Button
-                        android:id="@+id/add2"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:padding="0dp"
-                        android:text="+"
-                        android:textSize="20sp"
-                        android:textColor="#FFFFFF" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="③ 不重要 · 紧急"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/cat_quad3" />
+
+                        <Button
+                            android:id="@+id/add3"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="0dp"
+                            android:text="+"
+                            android:textSize="18sp"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/zone3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q3_light"
+                        android:minHeight="90dp"
+                        android:orientation="vertical"
+                        android:padding="4dp" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/zone2"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="4dp" />
+                    android:layout_weight="1"
+                    android:layout_margin="4dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q4_header"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="④ 不重要 · 不急"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/cat_quad4" />
+
+                        <Button
+                            android:id="@+id/add4"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="0dp"
+                            android:text="+"
+                            android:textSize="18sp"
+                            android:textColor="#FFFFFF" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/zone4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/q4_light"
+                        android:minHeight="90dp"
+                        android:orientation="vertical"
+                        android:padding="4dp" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-
-        <!-- 第二行：象限 ③④ -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/brand_dark"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="③ 不重要 · 紧急"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/add3"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:padding="0dp"
-                        android:text="+"
-                        android:textSize="20sp"
-                        android:textColor="#FFFFFF" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/zone3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="4dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/brand_dark"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="④ 不重要 · 不紧急"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/add4"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:padding="0dp"
-                        android:text="+"
-                        android:textSize="20sp"
-                        android:textColor="#FFFFFF" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/zone4"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="4dp" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</FrameLayout>

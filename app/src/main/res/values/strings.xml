@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">思存 · 便签收纳</string>
+    <string name="app_name">札记</string>
     <string name="navQuad">四象限</string>
     <string name="navIdea">点子</string>
     <string name="navUnd">未想清</string>
