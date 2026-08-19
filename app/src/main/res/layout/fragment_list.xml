@@ -22,8 +22,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp"
-            android:paddingBottom="120dp">
+android:padding="14dp"
+        android:paddingBottom="85dp">
 
             <TextView
                 android:id="@+id/tvTitle"
@@ -53,12 +53,12 @@
     <!-- 底部装饰带：固定浮在 fragment 底部，覆盖深色空白区 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="110dp"
+        android:layout_height="75dp"
         android:layout_gravity="bottom"
         android:background="@drawable/footer_deco"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingBottom="12dp">
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -70,35 +70,34 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🐈"
-                android:textSize="24sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
+                android:layout_marginHorizontal="8dp"
                 android:text="🐈‍⬛"
-                android:textSize="24sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="🐈"
-                android:textSize="24sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🐾 🐾 🐾"
-            android:textColor="#88000000"
-            android:textSize="12sp" />
+android:text="🐾 🐾 🐾"
+        android:textColor="#88000000"
+        android:textSize="11sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
             android:text="记录让生活有迹可循"
             android:textColor="#FF1F3D2E"
-            android:textSize="11sp" />
+            android:textSize="10sp" />
     </LinearLayout>
 </FrameLayout>
