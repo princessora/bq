@@ -16,6 +16,6 @@
     <color name="q4_header">#2E7D32</color>
     <color name="q4_light">#80E8F5E9</color>
 
-    <!-- 半透明遮罩：调到 20% 白，让背景图更明显 -->
-    <color name="scrim">#33FFFFFF</color>
+    <!-- 半透明遮罩：调到 12% 白，让背景图更明显 -->
+    <color name="scrim">#1FFFFFFF</color>
 </resources>

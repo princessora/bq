@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment
 class QuadFragment : Fragment() {
 
     private val zones = mutableMapOf<Int, ViewGroup>()
-    private var notes = mutableListOf<Note>()
+    private var notes: MutableList<Note> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,7 +55,8 @@ class QuadFragment : Fragment() {
     }
 
     fun refresh() {
-        notes = NotesRepository.load(requireContext())
+        // 共享列表：拿到所有 Fragment 共用的同一份引用
+        notes = NotesStore.all()
         zones.forEach { (zone, container) ->
             container.removeAllViews()
             notes.filter { it.module == Module.QUAD && it.quadZone == zone }
@@ -146,6 +147,6 @@ class QuadFragment : Fragment() {
     }
 
     private fun persist() {
-        NotesRepository.save(requireContext(), notes)
+        NotesStore.save()
     }
 }

@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 初始化共享数据层：三个 Fragment 读写同一份列表，杜绝互相覆盖
+        NotesStore.init(this)
         setContentView(R.layout.activity_main)
         bottomNav = findViewById(R.id.bottomNav)
 

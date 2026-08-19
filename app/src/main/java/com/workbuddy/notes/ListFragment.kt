@@ -18,7 +18,7 @@ class ListFragment : Fragment() {
     private lateinit var module: Module
     private lateinit var containerNotes: ViewGroup
     private lateinit var tvTitle: TextView
-    private var notes = mutableListOf<Note>()
+    private var notes: MutableList<Note> = mutableListOf()
 
     companion object {
         fun newInstance(m: Module): ListFragment {
@@ -64,7 +64,8 @@ class ListFragment : Fragment() {
     }
 
     fun refresh() {
-        notes = NotesRepository.load(requireContext())
+        // 共享列表：与其他 Fragment 共用同一份引用，避免各自快照互相覆盖
+        notes = NotesStore.all()
         containerNotes.removeAllViews()
         notes.filter { it.module == module }
             .sortedByDescending { it.createdAt }
@@ -137,6 +138,6 @@ class ListFragment : Fragment() {
     }
 
     private fun persist() {
-        NotesRepository.save(requireContext(), notes)
+        NotesStore.save()
     }
 }
