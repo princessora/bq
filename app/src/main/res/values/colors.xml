@@ -6,16 +6,16 @@
     <color name="ink">#212121</color>
     <color name="ink_sub">#757575</color>
 
-    <!-- 四象限主题色 -->
+    <!-- 四象限主题色：zone 区背景加 50% 透明度，让背景图透出来 -->
     <color name="q1_header">#C62828</color>
-    <color name="q1_light">#FFEBEE</color>
+    <color name="q1_light">#80FFEBEE</color>
     <color name="q2_header">#EF6C00</color>
-    <color name="q2_light">#FFF3E0</color>
+    <color name="q2_light">#80FFF3E0</color>
     <color name="q3_header">#1565C0</color>
-    <color name="q3_light">#E3F2FD</color>
+    <color name="q3_light">#80E3F2FD</color>
     <color name="q4_header">#2E7D32</color>
-    <color name="q4_light">#E8F5E9</color>
+    <color name="q4_light">#80E8F5E9</color>
 
-    <!-- 半透明遮罩:深色背景图适配,30%白让人物透出,文字仍可读 -->
-    <color name="scrim">#4DFFFFFF</color>
+    <!-- 半透明遮罩：调到 20% 白，让背景图更明显 -->
+    <color name="scrim">#33FFFFFF</color>
 </resources>
