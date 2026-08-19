@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navQuad"
+        android:icon="@drawable/ic_quad"
+        android:title="@string/navQuad" />
+    <item
+        android:id="@+id/navIdea"
+        android:icon="@drawable/ic_idea"
+        android:title="@string/navIdea" />
+    <item
+        android:id="@+id/navUnd"
+        android:icon="@drawable/ic_undecided"
+        android:title="@string/navUnd" />
+</menu>
