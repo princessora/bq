@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部装饰带：透明→黑色渐变 + 顶部虚线胶带 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 渐变底 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#00000000"
+                android:endColor="#B3000000" />
+        </shape>
+    </item>
+    <!-- 顶部虚线胶带 -->
+    <item android:gravity="top">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="1dp"
+                android:color="#99FFFFFF"
+                android:dashWidth="8dp"
+                android:dashGap="6dp" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+</layer-list>
