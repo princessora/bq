@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 解析 ZIP 备份：读 notes.json，把 attachments/* 解压到私有目录并重写 Note 附件绝对路径。 */
+    /** 解析 ZIP 备份：读 notes.json，把 attachments 目录下附件解压到私有目录并重写 Note 附件绝对路径。 */
     private fun parseBackup(uri: Uri): MutableList<Note> {
         val attachDir = Media.attachDir(this)
         val extracted = mutableMapOf<String, File>()
