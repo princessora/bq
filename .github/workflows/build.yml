@@ -33,8 +33,10 @@ jobs:
       - name: Build Debug APK
         run: gradle :app:assembleDebug
 
-      # 给 APK 加上递增的 run 编号后缀（如 app-debug-r15.apk），
+      # 给 APK 加上递增的 run 编号后缀（如 app-debug-r18.apk），
       # 避免每次下载解压后都叫同名覆盖导致 vivo 拒绝安装。
+      # 注意：shell 命令用 ${GITHUB_RUN_NUMBER}（bash 展开），
+      # actions/upload-artifact 的 path 要用 ${{ github.run_number }}（GitHub 表达式）。
       - name: Rename APK with run number
         run: mv app/build/outputs/apk/debug/app-debug.apk "app/build/outputs/apk/debug/app-debug-r${GITHUB_RUN_NUMBER}.apk"
 
@@ -42,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug-r${GITHUB_RUN_NUMBER}.apk
+          path: app/build/outputs/apk/debug/app-debug-r${{ github.run_number }}.apk
