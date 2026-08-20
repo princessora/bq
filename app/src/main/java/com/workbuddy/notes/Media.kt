@@ -15,7 +15,7 @@ import java.io.FileOutputStream
 object Media {
     private const val ATTACH_DIR = "attachments"
 
-    private fun attachDir(context: Context): File =
+    internal fun attachDir(context: Context): File =
         File(context.filesDir, ATTACH_DIR).apply { mkdirs() }
 
     /** 把 content Uri（图库/相册）复制到私有目录，返回绝对路径；失败返回 null */

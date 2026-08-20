@@ -1,6 +1,7 @@
 package com.workbuddy.notes
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,16 +16,14 @@ import androidx.fragment.app.Fragment
 
 /**
  * 四象限归纳（借鉴 Einsen 的 Eisenhower 矩阵）。
- * 四个象限：① 重要·紧急 ② 重要·不紧急 ③ 不重要·紧急 ④ 不重要·不紧急。
- * 每条便签可在象限间「移」，也能跨区移进「点子 / 未想清」。
- * 支持图文 + 语音：编辑弹窗可加图片、录音。
+ * 支持图文 + 语音 + 标签 + 加密；删除进入回收站（软删除），支持全文搜索过滤。
  */
 class QuadFragment : Fragment() {
 
     private val zones = mutableMapOf<Int, ViewGroup>()
     private var notes: MutableList<Note> = mutableListOf()
+    private var searchQuery: String = ""
 
-    /** 当前正在编辑的便签（新建时为临时对象，保存时才入列表） */
     private var editingNote: Note? = null
     private var editingDialog: AlertDialog? = null
 
@@ -63,7 +62,6 @@ class QuadFragment : Fragment() {
         openEditor(Note.QUAD_ZONES[zone - 1], zone, null)
     }
 
-    /** 打开编辑弹窗（新建/编辑共用），支持图片与语音 */
     private fun openEditor(title: String, zone: Int, existing: Note?) {
         val isNew = existing == null
         val note = existing ?: Note(module = Module.QUAD, quadZone = zone)
@@ -71,16 +69,12 @@ class QuadFragment : Fragment() {
         editingDialog = Ui.showEditor(
             requireContext(),
             title,
-            note.text,
-            note.colorHex,
-            imagePath = note.imagePath,
-            audioPath = note.audioPath,
-            audioDurationMs = note.audioDurationMs,
-            onPickImage = { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            note,
+            onPickImage = {
+                pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
             onRecordAudio = { requestRecordPermission() },
-            onOk = { t, c ->
-                note.text = t
-                note.colorHex = c
+            onOk = {
                 if (isNew) notes.add(note)
                 persist()
                 refresh()
@@ -88,8 +82,13 @@ class QuadFragment : Fragment() {
         )
     }
 
-    // ---------- 录音 ----------
+    // ---------- 搜索 ----------
+    fun setSearch(q: String) {
+        searchQuery = q.trim()
+        refresh()
+    }
 
+    // ---------- 录音 ----------
     private fun requestRecordPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
@@ -106,16 +105,16 @@ class QuadFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_AUDIO &&
-            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            showRecorderDialog()
-        } else {
-            AlertDialog.Builder(requireContext())
-                .setTitle("需要麦克风权限")
-                .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
-                .setPositiveButton("知道了", null)
-                .show()
+        when (requestCode) {
+            REQ_AUDIO -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showRecorderDialog()
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("需要麦克风权限")
+                    .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
+                    .setPositiveButton("知道了", null)
+                    .show()
+            }
         }
     }
 
@@ -130,7 +129,6 @@ class QuadFragment : Fragment() {
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             if (recorder.isRecording) {
-                // 停止并保存
                 val dur = recorder.stop()
                 if (dur >= 0 && recorder.filePath != null) {
                     editingNote?.audioPath = recorder.filePath
@@ -152,46 +150,55 @@ class QuadFragment : Fragment() {
             dialog.dismiss()
         }
         dialog.setOnDismissListener {
-            // 只在「还在录音」时清理；已保存的文件不能删
             if (recorder.isRecording) recorder.cancel()
         }
     }
 
     fun refresh() {
-        // 共享列表：拿到所有 Fragment 共用的同一份引用
         notes = NotesStore.all()
         zones.forEach { (zone, container) ->
             container.removeAllViews()
-            notes.filter { it.module == Module.QUAD && it.quadZone == zone }
+            notes.filter { it.module == Module.QUAD && it.quadZone == zone && !it.deleted }
+                .filter { matchSearch(it) }
                 .sortedByDescending { it.createdAt }
                 .forEach { note ->
                     container.addView(
                         Cards.create(
                             requireContext(),
                             note,
-                            onEdit = {
-                                openEditor(Note.QUAD_ZONES[zone - 1], zone, note)
-                            },
+                            onEdit = { openEditor(Note.QUAD_ZONES[zone - 1], zone, note) },
                             onColor = { cycleColor(note) },
                             onMove = { showMove(note) },
-                            onDelete = {
-                                AlertDialog.Builder(requireContext())
-                                    .setTitle("确认删除")
-                                    .setMessage("确定要删除这条便签吗？（图片和语音也会一并删除）")
-                                    .setPositiveButton("删除") { _, _ ->
-                                        Media.deleteFile(note.imagePath)
-                                        Media.deleteFile(note.audioPath)
-                                        notes.remove(note)
-                                        persist()
-                                        refresh()
-                                    }
-                                    .setNegativeButton("取消", null)
-                                    .show()
-                            }
+                            onDelete = { softDelete(note) },
+                            onShare = { },
+                            onUnlock = { PinDialog.verify(requireContext()) { openEditor(Note.QUAD_ZONES[zone - 1], zone, note) } },
+                            onLocation = { }
                         )
                     )
                 }
         }
+    }
+
+    private fun matchSearch(note: Note): Boolean {
+        if (searchQuery.isEmpty()) return true
+        val q = searchQuery.lowercase()
+        if (note.text.lowercase().contains(q)) return true
+        if (note.tagList().any { it.lowercase().contains(q) }) return true
+        return false
+    }
+
+    private fun softDelete(note: Note) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("移入回收站")
+            .setMessage("确定删除这条便签吗？将进入回收站，7 天内可恢复。")
+            .setPositiveButton("删除") { _, _ ->
+                note.deleted = true
+                note.deletedAt = System.currentTimeMillis()
+                persist()
+                refresh()
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showMove(note: Note) {

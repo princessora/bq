@@ -5,4 +5,20 @@
     <item name="editor_image_preview" type="id" />
     <item name="editor_btn_audio" type="id" />
     <item name="editor_audio_info" type="id" />
+    <!-- 新增编辑控件 -->
+    <item name="editor_tags" type="id" />
+    <item name="editor_pin" type="id" />
+    <item name="editor_fav" type="id" />
+    <item name="editor_lock" type="id" />
+    <item name="editor_btn_date" type="id" />
+    <item name="editor_btn_location" type="id" />
+    <item name="editor_btn_draw" type="id" />
+    <item name="editor_btn_template" type="id" />
+    <item name="editor_draw_preview" type="id" />
+    <item name="editor_date_info" type="id" />
+    <item name="editor_location_info" type="id" />
+    <!-- 顶部栏 -->
+    <item name="topTitle" type="id" />
+    <item name="searchBox" type="id" />
+    <item name="menuBtn" type="id" />
 </resources>

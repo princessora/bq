@@ -26,7 +26,18 @@
         android:scaleType="fitCenter"
         android:visibility="gone" />
 
-    <!-- 语音行（有语音才显示，点击播放/停止） -->
+    <!-- 涂鸦（有涂鸦才显示） -->
+    <ImageView
+        android:id="@+id/ivDraw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="200dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
+
+    <!-- 语音行（有语音才显示） -->
     <LinearLayout
         android:id="@+id/audioRow"
         android:layout_width="match_parent"
@@ -57,13 +68,33 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- 四个按钮等宽平分，永远全部显示，不滚动 -->
+    <!-- 标签 chips -->
+    <TextView
+        android:id="@+id/tvTags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/ink_sub"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- 指示器行：置顶/收藏/加密/倒计时/位置 -->
+    <TextView
+        android:id="@+id/tvMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/ink_sub"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- 五个按钮等宽平分：改/色/移/删/享 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:orientation="horizontal"
-        android:weightSum="4">
+        android:weightSum="5">
 
         <Button
             android:id="@+id/btnEdit"
@@ -103,9 +134,20 @@
             android:layout_width="0dp"
             android:layout_height="30dp"
             android:layout_weight="1"
+            android:layout_marginEnd="4dp"
             android:minWidth="0dp"
             android:paddingHorizontal="0dp"
             android:text="删"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/btnShare"
+            android:layout_width="0dp"
+            android:layout_height="30dp"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="享"
             android:textSize="11sp" />
     </LinearLayout>
 </LinearLayout>

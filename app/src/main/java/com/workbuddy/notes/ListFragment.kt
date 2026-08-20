@@ -1,6 +1,7 @@
 package com.workbuddy.notes
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +17,7 @@ import androidx.fragment.app.Fragment
 
 /**
  * 「点子存放处」与「未想清楚的事」共用此列表页（借鉴 ANotes 的分类收纳思路）。
- * 通过 [module] 区分两类，UI 完全一致。支持图文 + 语音。
+ * 通过 [module] 区分两类，UI 完全一致。支持图文/语音/标签/加密。
  */
 class ListFragment : Fragment() {
 
@@ -24,8 +25,8 @@ class ListFragment : Fragment() {
     private lateinit var containerNotes: ViewGroup
     private lateinit var tvTitle: TextView
     private var notes: MutableList<Note> = mutableListOf()
+    private var searchQuery: String = ""
 
-    /** 当前正在编辑的便签（新建时为临时对象，保存时才入列表） */
     private var editingNote: Note? = null
     private var editingDialog: AlertDialog? = null
 
@@ -73,7 +74,6 @@ class ListFragment : Fragment() {
         openEditor("新建「${Note.MODULE_TITLE[module]}」", null)
     }
 
-    /** 打开编辑弹窗（新建/编辑共用），支持图片与语音 */
     private fun openEditor(title: String, existing: Note?) {
         val isNew = existing == null
         val note = existing ?: Note(module = module, quadZone = 1)
@@ -81,16 +81,12 @@ class ListFragment : Fragment() {
         editingDialog = Ui.showEditor(
             requireContext(),
             title,
-            note.text,
-            note.colorHex,
-            imagePath = note.imagePath,
-            audioPath = note.audioPath,
-            audioDurationMs = note.audioDurationMs,
-            onPickImage = { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            note,
+            onPickImage = {
+                pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
             onRecordAudio = { requestRecordPermission() },
-            onOk = { t, c ->
-                note.text = t
-                note.colorHex = c
+            onOk = {
                 if (isNew) notes.add(note)
                 persist()
                 refresh()
@@ -98,7 +94,10 @@ class ListFragment : Fragment() {
         )
     }
 
-    // ---------- 录音 ----------
+    fun setSearch(q: String) {
+        searchQuery = q.trim()
+        refresh()
+    }
 
     private fun requestRecordPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
@@ -116,16 +115,16 @@ class ListFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_AUDIO &&
-            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            showRecorderDialog()
-        } else {
-            AlertDialog.Builder(requireContext())
-                .setTitle("需要麦克风权限")
-                .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
-                .setPositiveButton("知道了", null)
-                .show()
+        when (requestCode) {
+            REQ_AUDIO -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                showRecorderDialog()
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("需要麦克风权限")
+                    .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
+                    .setPositiveButton("知道了", null)
+                    .show()
+            }
         }
     }
 
@@ -161,44 +160,53 @@ class ListFragment : Fragment() {
             dialog.dismiss()
         }
         dialog.setOnDismissListener {
-            // 只在「还在录音」时清理；已保存的文件不能删
             if (recorder.isRecording) recorder.cancel()
         }
     }
 
     fun refresh() {
-        // 共享列表：与其他 Fragment 共用同一份引用，避免各自快照互相覆盖
         notes = NotesStore.all()
         containerNotes.removeAllViews()
-        notes.filter { it.module == module }
+        notes.filter { it.module == module && !it.deleted }
+            .filter { matchSearch(it) }
             .sortedByDescending { it.createdAt }
             .forEach { note ->
                 containerNotes.addView(
                     Cards.create(
                         requireContext(),
                         note,
-                        onEdit = {
-                            openEditor("编辑", note)
-                        },
+                        onEdit = { openEditor("编辑", note) },
                         onColor = { cycleColor(note) },
                         onMove = { showMove(note) },
-                        onDelete = {
-                            AlertDialog.Builder(requireContext())
-                                .setTitle("确认删除")
-                                .setMessage("确定要删除这条便签吗？（图片和语音也会一并删除）")
-                                .setPositiveButton("删除") { _, _ ->
-                                    Media.deleteFile(note.imagePath)
-                                    Media.deleteFile(note.audioPath)
-                                    notes.remove(note)
-                                    persist()
-                                    refresh()
-                                }
-                                .setNegativeButton("取消", null)
-                                .show()
-                        }
+                        onDelete = { softDelete(note) },
+                        onShare = { },
+                        onUnlock = { PinDialog.verify(requireContext()) { openEditor("编辑", note) } },
+                        onLocation = { }
                     )
                 )
             }
+    }
+
+    private fun matchSearch(note: Note): Boolean {
+        if (searchQuery.isEmpty()) return true
+        val q = searchQuery.lowercase()
+        if (note.text.lowercase().contains(q)) return true
+        if (note.tagList().any { it.lowercase().contains(q) }) return true
+        return false
+    }
+
+    private fun softDelete(note: Note) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("移入回收站")
+            .setMessage("确定删除这条便签吗？将进入回收站，7 天内可恢复。")
+            .setPositiveButton("删除") { _, _ ->
+                note.deleted = true
+                note.deletedAt = System.currentTimeMillis()
+                persist()
+                refresh()
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showMove(note: Note) {
