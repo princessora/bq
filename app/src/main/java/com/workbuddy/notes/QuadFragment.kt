@@ -62,10 +62,10 @@ class QuadFragment : Fragment() {
         zones[3] = view.findViewById(R.id.zone3)
         zones[4] = view.findViewById(R.id.zone4)
 
-        view.findViewById<Button>(R.id.add1).setOnClickListener { addNote(1) }
-        view.findViewById<Button>(R.id.add2).setOnClickListener { addNote(2) }
-        view.findViewById<Button>(R.id.add3).setOnClickListener { addNote(3) }
-        view.findViewById<Button>(R.id.add4).setOnClickListener { addNote(4) }
+        view.findViewById<TextView>(R.id.add1).setOnClickListener { addNote(1) }
+        view.findViewById<TextView>(R.id.add2).setOnClickListener { addNote(2) }
+        view.findViewById<TextView>(R.id.add3).setOnClickListener { addNote(3) }
+        view.findViewById<TextView>(R.id.add4).setOnClickListener { addNote(4) }
 
         refresh()
         return view

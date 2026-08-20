@@ -1,6 +1,7 @@
 package com.workbuddy.notes
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.util.Calendar
 
@@ -33,7 +35,7 @@ object Cards {
         val ivImage = view.findViewById<ImageView>(R.id.ivImage)
         val ivDraw = view.findViewById<ImageView>(R.id.ivDraw)
         val audioRow = view.findViewById<LinearLayout>(R.id.audioRow)
-        val btnPlay = view.findViewById<Button>(R.id.btnPlay)
+        val btnPlay = view.findViewById<TextView>(R.id.btnPlay)
         val tvAudioDur = view.findViewById<TextView>(R.id.tvAudioDur)
         val tvTags = view.findViewById<TextView>(R.id.tvTags)
         val tvMeta = view.findViewById<TextView>(R.id.tvMeta)
@@ -46,7 +48,7 @@ object Cards {
         val bg = view.background
         if (bg is GradientDrawable) {
             try {
-                bg.setColor(Color.parseColor(note.colorHex))
+                bg.setColor(Color.parseColor(effectiveCardColor(context, note.colorHex)))
             } catch (_: Exception) {
                 // 颜色解析失败则保留默认白底
             }
@@ -136,6 +138,36 @@ object Cards {
         btnDelete.setOnClickListener { onDelete() }
         btnShare.setOnClickListener { onShare() }
         return view
+    }
+
+    /**
+     * 夜间模式下，如果便签底色是「白/浅色」，自动换成深色 surface，
+     * 避免卡片在深色界面上过亮、文字看不全（夜间字色已跟随 values-night 反相为白）。
+     * 用户主动选的彩色（红/橙/黄/绿/蓝/紫等）则保留。
+     */
+    private fun effectiveCardColor(context: Context, hex: String): String {
+        val night = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES
+        if (!night) return hex
+        val isLightish = isLightColor(hex)
+        return if (isLightish) "#1E1E1E" else hex
+    }
+
+    /** 颜色是否偏白/浅（HSV 亮度阈值 0.85，且饱和度低） */
+    private fun isLightColor(hex: String): Boolean {
+        return try {
+            val c = Color.parseColor(hex)
+            val r = Color.red(c) / 255f
+            val g = Color.green(c) / 255f
+            val b = Color.blue(c) / 255f
+            val brightness = (r * 0.299f + g * 0.587f + b * 0.114f)
+            val max = maxOf(r, g, b)
+            val min = minOf(r, g, b)
+            val sat = if (max == 0f) 0f else (max - min) / max
+            brightness >= 0.85f && sat <= 0.20f
+        } catch (_: Exception) {
+            true
+        }
     }
 
     /** 拼接指示器文案：置顶 / 收藏 / 加密 / 纪念日(含农历) / 位置 */

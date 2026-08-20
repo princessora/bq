@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 夜间模式下的全局色板：保持四象限彩色标识不变，只换“外壳”颜色保证可读 -->
-    <color name="bg">#121212</color>
-    <color name="surface">#1E1E1E</color>
+    <!-- 夜间模式：文字反相为主色系保持品牌色不变 -->
     <color name="ink">#ECEFF1</color>
     <color name="ink_sub">#B0BEC5</color>
-    <!-- 深色遮罩：压暗动漫背景，让文字在暗色下清晰 -->
-    <color name="scrim">#D9000000</color>
+    <color name="bg">#121212</color>
+    <color name="surface">#1E1E1E</color>
 </resources>
