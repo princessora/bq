@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 编辑弹窗内的附件区域（动态创建，需要稳定 id 供 Fragment 更新预览） -->
+    <item name="editor_btn_image" type="id" />
+    <item name="editor_image_preview" type="id" />
+    <item name="editor_btn_audio" type="id" />
+    <item name="editor_audio_info" type="id" />
+</resources>

@@ -14,7 +14,13 @@ data class Note(
     var colorHex: String = "#FFFFFF",
     val createdAt: Long = System.currentTimeMillis(),
     var module: Module = Module.QUAD,
-    var quadZone: Int = 1
+    var quadZone: Int = 1,
+    /** 配图绝对路径（app 私有目录），null 表示无图 */
+    var imagePath: String? = null,
+    /** 语音文件绝对路径（app 私有目录），null 表示无语音 */
+    var audioPath: String? = null,
+    /** 语音时长（毫秒），仅在 audioPath 非空时有效 */
+    var audioDurationMs: Long = 0L
 ) {
     companion object {
         /** 四象限标签，借鉴 Einsen 的 Eisenhower 矩阵 */

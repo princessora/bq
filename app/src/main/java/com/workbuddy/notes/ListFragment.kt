@@ -1,17 +1,22 @@
 package com.workbuddy.notes
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 
 /**
  * 「点子存放处」与「未想清楚的事」共用此列表页（借鉴 ANotes 的分类收纳思路）。
- * 通过 [module] 区分两类，UI 完全一致。
+ * 通过 [module] 区分两类，UI 完全一致。支持图文 + 语音。
  */
 class ListFragment : Fragment() {
 
@@ -20,7 +25,23 @@ class ListFragment : Fragment() {
     private lateinit var tvTitle: TextView
     private var notes: MutableList<Note> = mutableListOf()
 
+    /** 当前正在编辑的便签（新建时为临时对象，保存时才入列表） */
+    private var editingNote: Note? = null
+    private var editingDialog: AlertDialog? = null
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val path = Media.saveImage(requireContext(), uri)
+            editingNote?.imagePath = path
+            Ui.updateImagePreview(editingDialog, path)
+        }
+    }
+
     companion object {
+        private const val REQ_AUDIO = 1002
+
         fun newInstance(m: Module): ListFragment {
             val f = ListFragment()
             f.arguments = Bundle().apply { putString("module", m.name) }
@@ -49,17 +70,99 @@ class ListFragment : Fragment() {
     }
 
     private fun addNote() {
-        Ui.showEditor(requireContext(), "新建「${Note.MODULE_TITLE[module]}」", "", "#FFFFFF") { text, color ->
-            notes.add(
-                Note(
-                    text = text,
-                    colorHex = color,
-                    module = module,
-                    quadZone = 1
-                )
-            )
-            persist()
-            refresh()
+        openEditor("新建「${Note.MODULE_TITLE[module]}」", null)
+    }
+
+    /** 打开编辑弹窗（新建/编辑共用），支持图片与语音 */
+    private fun openEditor(title: String, existing: Note?) {
+        val isNew = existing == null
+        val note = existing ?: Note(module = module, quadZone = 1)
+        editingNote = note
+        editingDialog = Ui.showEditor(
+            requireContext(),
+            title,
+            note.text,
+            note.colorHex,
+            imagePath = note.imagePath,
+            audioPath = note.audioPath,
+            audioDurationMs = note.audioDurationMs,
+            onPickImage = { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+            onRecordAudio = { requestRecordPermission() },
+            onOk = { t, c ->
+                note.text = t
+                note.colorHex = c
+                if (isNew) notes.add(note)
+                persist()
+                refresh()
+            }
+        )
+    }
+
+    // ---------- 录音 ----------
+
+    private fun requestRecordPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            showRecorderDialog()
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQ_AUDIO)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_AUDIO &&
+            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            showRecorderDialog()
+        } else {
+            AlertDialog.Builder(requireContext())
+                .setTitle("需要麦克风权限")
+                .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
+                .setPositiveButton("知道了", null)
+                .show()
+        }
+    }
+
+    private fun showRecorderDialog() {
+        val recorder = AudioRecorder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("语音便签")
+            .setMessage("点击「开始」后说话，点「停止」保存")
+            .setPositiveButton("开始", null)
+            .setNegativeButton("取消", null)
+            .create()
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (recorder.isRecording) {
+                val dur = recorder.stop()
+                if (dur >= 0 && recorder.filePath != null) {
+                    editingNote?.audioPath = recorder.filePath
+                    editingNote?.audioDurationMs = dur
+                    Ui.updateAudioPreview(editingDialog, recorder.filePath, dur)
+                }
+                dialog.dismiss()
+            } else {
+                val path = recorder.start()
+                if (path != null) {
+                    dialog.setMessage("录音中… 点「停止」保存")
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).text = "停止"
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).text = "取消录音"
+                }
+            }
+        }
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            if (recorder.isRecording) recorder.cancel()
+            dialog.dismiss()
+        }
+        dialog.setOnDismissListener {
+            // 只在「还在录音」时清理；已保存的文件不能删
+            if (recorder.isRecording) recorder.cancel()
         }
     }
 
@@ -75,25 +178,17 @@ class ListFragment : Fragment() {
                         requireContext(),
                         note,
                         onEdit = {
-                            Ui.showEditor(
-                                requireContext(),
-                                "编辑",
-                                note.text,
-                                note.colorHex
-                            ) { t, c ->
-                                note.text = t
-                                note.colorHex = c
-                                persist()
-                                refresh()
-                            }
+                            openEditor("编辑", note)
                         },
                         onColor = { cycleColor(note) },
                         onMove = { showMove(note) },
                         onDelete = {
                             AlertDialog.Builder(requireContext())
                                 .setTitle("确认删除")
-                                .setMessage("确定要删除这条便签吗？")
+                                .setMessage("确定要删除这条便签吗？（图片和语音也会一并删除）")
                                 .setPositiveButton("删除") { _, _ ->
+                                    Media.deleteFile(note.imagePath)
+                                    Media.deleteFile(note.audioPath)
                                     notes.remove(note)
                                     persist()
                                     refresh()

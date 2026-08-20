@@ -15,6 +15,48 @@
         android:textColor="@color/ink"
         android:textSize="15sp" />
 
+    <!-- 配图（有图才显示，点击看大图） -->
+    <ImageView
+        android:id="@+id/ivImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:adjustViewBounds="true"
+        android:maxHeight="200dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
+
+    <!-- 语音行（有语音才显示，点击播放/停止） -->
+    <LinearLayout
+        android:id="@+id/audioRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:background="#26FF9800"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:minWidth="0dp"
+            android:paddingHorizontal="12dp"
+            android:text="▶ 播放"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvAudioDur"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textColor="#9A4D00"
+            android:textSize="12sp" />
+    </LinearLayout>
+
     <!-- 四个按钮等宽平分，永远全部显示，不滚动 -->
     <LinearLayout
         android:layout_width="match_parent"
