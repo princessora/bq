@@ -40,6 +40,16 @@ class ListFragment : Fragment() {
         }
     }
 
+    private val drawLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val path = result.data?.getStringExtra("path")
+        if (!path.isNullOrBlank()) {
+            editingNote?.drawingPath = path
+            Ui.updateDrawPreview(editingDialog, path)
+        }
+    }
+
     companion object {
         private const val REQ_AUDIO = 1002
 
@@ -86,6 +96,10 @@ class ListFragment : Fragment() {
                 pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             },
             onRecordAudio = { requestRecordPermission() },
+            onDraw = {
+                drawLauncher.launch(android.content.Intent(requireContext(), DrawActivity::class.java))
+            },
+            onPickTemplate = { showTemplatePicker() },
             onOk = {
                 if (isNew) notes.add(note)
                 persist()
@@ -97,6 +111,18 @@ class ListFragment : Fragment() {
     fun setSearch(q: String) {
         searchQuery = q.trim()
         refresh()
+    }
+
+    // ---------- 模板 ----------
+    private fun showTemplatePicker() {
+        val names = Templates.LIST.map { it.name }.toTypedArray()
+        AlertDialog.Builder(requireContext())
+            .setTitle("选择模板")
+            .setItems(names) { _, which ->
+                Ui.setEditorText(editingDialog, Templates.LIST[which].body)
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun requestRecordPermission() {
@@ -169,7 +195,7 @@ class ListFragment : Fragment() {
         containerNotes.removeAllViews()
         notes.filter { it.module == module && !it.deleted }
             .filter { matchSearch(it) }
-            .sortedByDescending { it.createdAt }
+            .sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.createdAt })
             .forEach { note ->
                 containerNotes.addView(
                     Cards.create(
@@ -242,5 +268,6 @@ class ListFragment : Fragment() {
 
     private fun persist() {
         NotesStore.save()
+        (activity as? MainActivity)?.updateWidget()
     }
 }

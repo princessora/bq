@@ -170,11 +170,16 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /** 任一模块改动后，刷新全部三个 Fragment 的视图。 */
+    /** 任一模块改动后，刷新全部三个 Fragment 的视图并刷新小部件。 */
     fun refreshAll() {
         quad.refresh()
         idea.refresh()
         und.refresh()
+        updateWidget()
+    }
+
+    fun updateWidget() {
+        NotesWidgetProvider.updateAll(this)
     }
 
     private fun purgeExpiredTrash() {

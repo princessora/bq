@@ -13,7 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import java.io.File
 
-/** 把一条便签渲染成卡片 View，并接好「改 / 色 / 移 / 删」动作，以及图片/语音/标签/加密展示。 */
+/** 把一条便签渲染成卡片 View，并接好「改 / 色 / 移 / 删」动作，以及图片/涂鸦/语音/标签/置顶/收藏/加密展示。 */
 object Cards {
     fun create(
         context: Context,
@@ -102,6 +102,15 @@ object Cards {
             ivImage.visibility = View.GONE
         }
 
+        // ---- 涂鸦 ----
+        if (note.drawingPath != null && File(note.drawingPath!!).exists()) {
+            ivDraw.visibility = View.VISIBLE
+            ivDraw.setImageURI(Uri.fromFile(File(note.drawingPath!!)))
+            ivDraw.setOnClickListener { showFullImage(context, note.drawingPath!!) }
+        } else {
+            ivDraw.visibility = View.GONE
+        }
+
         // ---- 语音 ----
         if (note.audioPath != null && File(note.audioPath!!).exists()) {
             audioRow.visibility = View.VISIBLE
@@ -126,9 +135,13 @@ object Cards {
         return view
     }
 
-    /** 拼接指示器文案（Batch 1：仅加密标记） */
+    /** 拼接指示器文案：置顶 / 收藏 / 加密 */
     private fun buildMeta(note: Note): String {
-        return if (note.locked) "🔒" else ""
+        val parts = mutableListOf<String>()
+        if (note.pinned) parts += "📌"
+        if (note.favorite) parts += "⭐"
+        if (note.locked) parts += "🔒"
+        return parts.joinToString(" ")
     }
 
     /** 点击配图后弹出大图查看 */

@@ -16,7 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import java.io.File
 
-/** 通用 UI 构造：编辑便签的弹窗（文本 + 颜色 + 图片 + 语音 + 标签 + 加密）。 */
+/** 通用 UI 构造：编辑便签的弹窗（文本 + 颜色 + 图片 + 语音 + 涂鸦 + 模板 + 标签 + 置顶/收藏/加密）。 */
 object Ui {
 
     /**
@@ -24,6 +24,8 @@ object Ui {
      *
      * @param onPickImage 点「📷 图片」回调
      * @param onRecordAudio 点「🎤 语音」回调
+     * @param onDraw 点「✏️ 涂鸦」回调
+     * @param onPickTemplate 点「📋 模板」回调
      * @param onOk 点「保存」后回调（此时 note 各字段已写入）
      */
     fun showEditor(
@@ -32,6 +34,8 @@ object Ui {
         note: Note,
         onPickImage: () -> Unit = {},
         onRecordAudio: () -> Unit = {},
+        onDraw: () -> Unit = {},
+        onPickTemplate: () -> Unit = {},
         onOk: () -> Unit
     ): AlertDialog {
         val dp = context.resources.displayMetrics.density
@@ -51,11 +55,17 @@ object Ui {
             gravity = Gravity.TOP
         }
 
-        // ---- 附件按钮：两行各三个 ----
+        // ---- 附件按钮 ----
         val row1 = mkBtnRow(
             context, dp, listOf(
                 "📷 图片" to onPickImage,
-                "🎤 语音" to onRecordAudio
+                "🎤 语音" to onRecordAudio,
+                "✏️ 涂鸦" to onDraw
+            )
+        )
+        val row2 = mkBtnRow(
+            context, dp, listOf(
+                "📋 模板" to onPickTemplate
             )
         )
 
@@ -75,6 +85,22 @@ object Ui {
             }
         }
 
+        // 涂鸦预览
+        val ivDraw = ImageView(context).apply {
+            id = R.id.editor_draw_preview
+            visibility = View.GONE
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            maxHeight = (160 * dp).toInt()
+        }
+        if (!note.drawingPath.isNullOrBlank()) {
+            try {
+                ivDraw.setImageURI(Uri.fromFile(File(note.drawingPath!!)))
+                ivDraw.visibility = View.VISIBLE
+            } catch (_: Exception) {
+            }
+        }
+
         // 标签
         val etTags = EditText(context).apply {
             id = R.id.editor_tags
@@ -84,7 +110,19 @@ object Ui {
             setPadding(0, (8 * dp).toInt(), 0, 0)
         }
 
-        // 加密
+        // 置顶 / 收藏 / 加密
+        val cbPin = CheckBox(context).apply {
+            id = R.id.editor_pin
+            text = "📌置顶"
+            isChecked = note.pinned
+            textSize = 13f
+        }
+        val cbFav = CheckBox(context).apply {
+            id = R.id.editor_fav
+            text = "⭐收藏"
+            isChecked = note.favorite
+            textSize = 13f
+        }
         val cbLock = CheckBox(context).apply {
             id = R.id.editor_lock
             text = "🔒加密"
@@ -94,6 +132,8 @@ object Ui {
         val toggleRow = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, (8 * dp).toInt(), 0, 0)
+            addView(cbPin, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(cbFav, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(cbLock, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         }
 
@@ -128,7 +168,9 @@ object Ui {
 
         layout.addView(et)
         layout.addView(row1)
+        layout.addView(row2)
         layout.addView(ivPreview)
+        layout.addView(ivDraw)
         layout.addView(etTags)
         layout.addView(toggleRow)
         layout.addView(label)
@@ -141,6 +183,8 @@ object Ui {
             .setPositiveButton("保存") { _, _ ->
                 note.text = et.text.toString().trim()
                 note.tags = etTags.text.toString().trim()
+                note.pinned = cbPin.isChecked
+                note.favorite = cbFav.isChecked
                 note.locked = cbLock.isChecked
                 onOk()
             }
