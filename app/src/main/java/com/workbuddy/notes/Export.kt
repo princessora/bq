@@ -140,7 +140,7 @@ object Export {
             y += 20f
             val content = if (note.locked) "🔒 加密便签" else note.text.takeIf { it.isNotBlank() }
                 ?: (if (note.hasAnyImage()) "[图片 / 涂鸦]" else if (note.audioPath != null) "[语音]" else "（空便签）")
-            wrapPdf(content, body, pageW - 2 * margin).forEach { line ->
+            wrapPdf(content, body, (pageW - 2 * margin).toInt()).forEach { line ->
                 if (y + 16 > pageH - margin) newPage()
                 canvas.drawText(line, margin, y, body)
                 y += 15f
