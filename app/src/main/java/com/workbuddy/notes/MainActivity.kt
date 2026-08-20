@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.PopupMenu
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -30,6 +31,11 @@ class MainActivity : AppCompatActivity() {
     private var activeTag = "quad"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 深色模式：必须在 setContentView 前设定
+        AppCompatDelegate.setDefaultNightMode(
+            if (AppSettings.isDark(this)) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
         super.onCreate(savedInstanceState)
 
         // 初始化共享数据层：三个 Fragment 读写同一份列表，杜绝互相覆盖
@@ -120,14 +126,16 @@ class MainActivity : AppCompatActivity() {
         val popup = PopupMenu(this, anchor)
         popup.menu.add(0, 1, 0, "🗑 回收站")
         popup.menu.add(0, 2, 0, "📤 导出备份")
-        popup.menu.add(0, 3, 0, "🔒 隐私锁")
-        popup.menu.add(0, 4, 0, "ℹ 关于")
+        popup.menu.add(0, 3, 0, if (AppSettings.isDark(this)) "☀ 日间模式" else "🌙 夜间模式")
+        popup.menu.add(0, 4, 0, "🔒 隐私锁")
+        popup.menu.add(0, 5, 0, "ℹ 关于")
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 1 -> startActivity(Intent(this, RecycleBinActivity::class.java))
                 2 -> showExportChoice()
-                3 -> showPrivacyLock()
-                4 -> showAbout()
+                3 -> toggleDark()
+                4 -> showPrivacyLock()
+                5 -> showAbout()
             }
             true
         }
@@ -146,6 +154,14 @@ class MainActivity : AppCompatActivity() {
                 Export.shareFile(this, file, mime)
             }
             .show()
+    }
+
+    private fun toggleDark() {
+        val on = !AppSettings.isDark(this)
+        AppSettings.setDark(this, on)
+        AppCompatDelegate.setDefaultNightMode(
+            if (on) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 
     private fun showPrivacyLock() {

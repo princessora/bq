@@ -25,6 +25,8 @@ object Ui {
      * @param onPickImage 点「📷 图片」回调
      * @param onRecordAudio 点「🎤 语音」回调
      * @param onDraw 点「✏️ 涂鸦」回调
+     * @param onPickLocation 点「📍 位置」回调
+     * @param onPickDate 点「📅 日期」回调
      * @param onPickTemplate 点「📋 模板」回调
      * @param onOk 点「保存」后回调（此时 note 各字段已写入）
      */
@@ -35,6 +37,8 @@ object Ui {
         onPickImage: () -> Unit = {},
         onRecordAudio: () -> Unit = {},
         onDraw: () -> Unit = {},
+        onPickLocation: () -> Unit = {},
+        onPickDate: () -> Unit = {},
         onPickTemplate: () -> Unit = {},
         onOk: () -> Unit
     ): AlertDialog {
@@ -65,6 +69,8 @@ object Ui {
         )
         val row2 = mkBtnRow(
             context, dp, listOf(
+                "📍 位置" to onPickLocation,
+                "📅 日期" to onPickDate,
                 "📋 模板" to onPickTemplate
             )
         )
@@ -99,6 +105,26 @@ object Ui {
                 ivDraw.visibility = View.VISIBLE
             } catch (_: Exception) {
             }
+        }
+
+        // 日期信息
+        val tvDate = TextView(context).apply {
+            id = R.id.editor_date_info
+            setPadding(0, (6 * dp).toInt(), 0, 0)
+            textSize = 13f
+            text = if (note.eventDate != null) {
+                "📅 ${note.eventLabel ?: "纪念日"} · ${countdownText(note.eventDate!!)}"
+            } else "未设置日期"
+        }
+
+        // 位置信息
+        val tvLoc = TextView(context).apply {
+            id = R.id.editor_location_info
+            setPadding(0, (6 * dp).toInt(), 0, 0)
+            textSize = 13f
+            text = if (!note.locationName.isNullOrBlank() || note.latitude != null) {
+                "📍 ${note.locationName ?: "已记录坐标"}"
+            } else "未记录位置"
         }
 
         // 标签
@@ -171,6 +197,8 @@ object Ui {
         layout.addView(row2)
         layout.addView(ivPreview)
         layout.addView(ivDraw)
+        layout.addView(tvDate)
+        layout.addView(tvLoc)
         layout.addView(etTags)
         layout.addView(toggleRow)
         layout.addView(label)

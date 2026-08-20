@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import java.io.File
+import java.util.Calendar
 
 /** 把一条便签渲染成卡片 View，并接好「改 / 色 / 移 / 删」动作，以及图片/涂鸦/语音/标签/置顶/收藏/加密展示。 */
 object Cards {
@@ -41,7 +42,6 @@ object Cards {
         val btnMove = view.findViewById<Button>(R.id.btnMove)
         val btnDelete = view.findViewById<Button>(R.id.btnDelete)
         val btnShare = view.findViewById<Button>(R.id.btnShare)
-        btnShare.visibility = View.GONE
 
         val bg = view.background
         if (bg is GradientDrawable) {
@@ -61,13 +61,16 @@ object Cards {
             tvTags.visibility = View.GONE
         }
 
-        // ---- 指示器（加密） ----
+        // ---- 指示器（置顶/收藏/加密/纪念日/位置） ----
         val meta = buildMeta(note)
         if (meta.isNotEmpty()) {
             tvMeta.visibility = View.VISIBLE
             tvMeta.text = meta
         } else {
             tvMeta.visibility = View.GONE
+        }
+        if (note.latitude != null || !note.locationName.isNullOrBlank()) {
+            tvMeta.setOnClickListener { onLocation() }
         }
 
         val btnEditAction: () -> Unit = { if (note.locked) onUnlock() else onEdit() }
@@ -135,12 +138,20 @@ object Cards {
         return view
     }
 
-    /** 拼接指示器文案：置顶 / 收藏 / 加密 */
+    /** 拼接指示器文案：置顶 / 收藏 / 加密 / 纪念日(含农历) / 位置 */
     private fun buildMeta(note: Note): String {
         val parts = mutableListOf<String>()
         if (note.pinned) parts += "📌"
         if (note.favorite) parts += "⭐"
         if (note.locked) parts += "🔒"
+        if (note.eventDate != null) {
+            val cal = Calendar.getInstance().apply { timeInMillis = note.eventDate!! }
+            val lunar = try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
+            parts += "📅${note.eventLabel ?: ""}${Ui.countdownText(note.eventDate!!)}$lunar"
+        }
+        if (note.latitude != null || !note.locationName.isNullOrBlank()) {
+            parts += "📍${note.locationName ?: "坐标"}"
+        }
         return parts.joinToString(" ")
     }
 

@@ -3,6 +3,8 @@
 
     <!-- 语音便签需要麦克风录音权限 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 记录位置（停车 / 探店坐标） -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"

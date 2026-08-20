@@ -3,6 +3,8 @@ package com.workbuddy.notes
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import java.util.Locale
 
 /**
  * 「点子存放处」与「未想清楚的事」共用此列表页（借鉴 ANotes 的分类收纳思路）。
@@ -52,6 +55,7 @@ class ListFragment : Fragment() {
 
     companion object {
         private const val REQ_AUDIO = 1002
+        private const val REQ_LOC = 1004
 
         fun newInstance(m: Module): ListFragment {
             val f = ListFragment()
@@ -99,6 +103,8 @@ class ListFragment : Fragment() {
             onDraw = {
                 drawLauncher.launch(android.content.Intent(requireContext(), DrawActivity::class.java))
             },
+            onPickLocation = { requestLocationPermission() },
+            onPickDate = { showDatePicker() },
             onPickTemplate = { showTemplatePicker() },
             onOk = {
                 if (isNew) notes.add(note)
@@ -125,6 +131,65 @@ class ListFragment : Fragment() {
             .show()
     }
 
+    // ---------- 定位 ----------
+    private fun requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            captureLocation()
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQ_LOC)
+        }
+    }
+
+    private fun captureLocation() {
+        val lm = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val loc = try {
+            lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+        } catch (e: Exception) {
+            null
+        }
+        if (loc != null) {
+            editingNote?.latitude = loc.latitude
+            editingNote?.longitude = loc.longitude
+            editingNote?.locationName = reverseGeocode(loc.latitude, loc.longitude)
+            Ui.updateLocationPreview(editingDialog, editingNote!!)
+        } else {
+            AlertDialog.Builder(requireContext())
+                .setTitle("暂无可用的位置")
+                .setMessage("请确认已开启定位服务后重试。")
+                .setPositiveButton("知道了", null)
+                .show()
+        }
+    }
+
+    private fun reverseGeocode(lat: Double, lng: Double): String? = try {
+        val gc = Geocoder(requireContext(), Locale.CHINA)
+        @Suppress("DEPRECATION")
+        gc.getFromLocation(lat, lng, 1)?.firstOrNull()?.getAddressLine(0)?.take(40)
+    } catch (e: Exception) {
+        null
+    }
+
+    // ---------- 纪念日 ----------
+    private fun showDatePicker() {
+        val now = java.util.Calendar.getInstance()
+        val dp = android.app.DatePickerDialog(
+            requireContext(),
+            { _, y, m, d ->
+                val cal = java.util.Calendar.getInstance().apply { set(y, m, d, 0, 0, 0) }
+                editingNote?.eventDate = cal.timeInMillis
+                editingNote?.eventLabel = "纪念日"
+                Ui.updateDatePreview(editingDialog, editingNote!!)
+            },
+            now.get(java.util.Calendar.YEAR),
+            now.get(java.util.Calendar.MONTH),
+            now.get(java.util.Calendar.DAY_OF_MONTH)
+        )
+        dp.show()
+    }
+
     private fun requestRecordPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
@@ -148,6 +213,15 @@ class ListFragment : Fragment() {
                 AlertDialog.Builder(requireContext())
                     .setTitle("需要麦克风权限")
                     .setMessage("录音便签需要麦克风权限，请在系统设置中开启。")
+                    .setPositiveButton("知道了", null)
+                    .show()
+            }
+            REQ_LOC -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                captureLocation()
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("需要定位权限")
+                    .setMessage("记录位置需要定位权限，已取消。")
                     .setPositiveButton("知道了", null)
                     .show()
             }
@@ -205,9 +279,9 @@ class ListFragment : Fragment() {
                         onColor = { cycleColor(note) },
                         onMove = { showMove(note) },
                         onDelete = { softDelete(note) },
-                        onShare = { },
+                        onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
                         onUnlock = { PinDialog.verify(requireContext()) { openEditor("编辑", note) } },
-                        onLocation = { }
+                        onLocation = { openMap(note) }
                     )
                 )
             }
@@ -218,6 +292,7 @@ class ListFragment : Fragment() {
         val q = searchQuery.lowercase()
         if (note.text.lowercase().contains(q)) return true
         if (note.tagList().any { it.lowercase().contains(q) }) return true
+        if (!note.eventLabel.isNullOrBlank() && note.eventLabel!!.lowercase().contains(q)) return true
         return false
     }
 
@@ -233,6 +308,21 @@ class ListFragment : Fragment() {
             }
             .setNegativeButton("取消", null)
             .show()
+    }
+
+    private fun openMap(note: Note) {
+        if (note.latitude == null || note.longitude == null) return
+        val uri = android.net.Uri.parse("geo:${note.latitude},${note.longitude}?q=${note.latitude},${note.longitude}(${android.net.Uri.encode(note.locationName ?: "便签位置")})")
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("无法打开地图")
+                .setMessage("设备上没有可用的地图应用。")
+                .setPositiveButton("知道了", null)
+                .show()
+        }
     }
 
     private fun showMove(note: Note) {
