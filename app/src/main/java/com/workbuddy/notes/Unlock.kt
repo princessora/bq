@@ -28,11 +28,11 @@ object Unlock {
             return
         }
         val activity = context as? FragmentActivity
+        val bm = BiometricManager.from(context)
         val canBiometric = activity != null &&
-            BiometricManager.from(context)
-                .canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ==
+            bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) ==
             BiometricManager.BIOMETRIC_SUCCESS
-        if (canBiometric) {
+        if (activity != null && canBiometric) {
             biometric(activity, hash, onSuccess)
         } else {
             promptPin(context, hash, onSuccess)
