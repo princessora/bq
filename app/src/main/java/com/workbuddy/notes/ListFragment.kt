@@ -78,6 +78,7 @@ class ListFragment : Fragment() {
         tvTitle = view.findViewById(R.id.tvTitle)
         containerNotes = view.findViewById(R.id.listNotes)
         tvTitle.text = Note.MODULE_TITLE[module]
+        styleTitleBar()
 
         view.findViewById<Button>(R.id.btnAdd).setOnClickListener { addNote() }
         refresh()
@@ -86,6 +87,26 @@ class ListFragment : Fragment() {
 
     private fun addNote() {
         openEditor("新建「${Note.MODULE_TITLE[module]}」", null)
+    }
+
+    /** 点子 / 未想清 页标题改为醒目的彩色标题条（与背景图拉开对比，两页颜色不同便于区分）。 */
+    private fun styleTitleBar() {
+        val dp = resources.displayMetrics.density
+        val isIdea = module == Module.IDEA
+        tvTitle.text = (if (isIdea) "💡 " else "❓ ") + Note.MODULE_TITLE[module]
+        tvTitle.setTextColor(android.graphics.Color.WHITE)
+        tvTitle.textSize = 18f
+        val bg = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = (10 * dp)
+            setColor(
+                androidx.core.content.ContextCompat.getColor(
+                    requireContext(),
+                    if (isIdea) R.color.idea_header else R.color.und_header
+                )
+            )
+        }
+        tvTitle.background = bg
+        tvTitle.setPadding((12 * dp).toInt(), (8 * dp).toInt(), (12 * dp).toInt(), (8 * dp).toInt())
     }
 
     private fun openEditor(title: String, existing: Note?) {
@@ -280,7 +301,7 @@ class ListFragment : Fragment() {
                         onMove = { showMove(note) },
                         onDelete = { softDelete(note) },
                         onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
-                        onUnlock = { PinDialog.verify(requireContext()) { openEditor("编辑", note) } },
+                        onUnlock = { Unlock.verify(requireContext()) { openEditor("编辑", note) } },
                         onLocation = { openMap(note) }
                     )
                 )

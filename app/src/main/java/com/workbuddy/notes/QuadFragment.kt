@@ -270,7 +270,7 @@ class QuadFragment : Fragment() {
                             onMove = { showMove(note) },
                             onDelete = { softDelete(note) },
                             onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
-                            onUnlock = { PinDialog.verify(requireContext()) { openEditor(Note.QUAD_ZONES[zone - 1], zone, note) } },
+                            onUnlock = { Unlock.verify(requireContext()) { openEditor(Note.QUAD_ZONES[zone - 1], zone, note) } },
                             onLocation = { openMap(note) }
                         )
                     )

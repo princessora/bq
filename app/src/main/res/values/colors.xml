@@ -16,6 +16,10 @@
     <color name="q4_header">#2E7D32</color>
     <color name="q4_light">#B3E8F5E9</color>
 
+    <!-- 点子 / 未想清 页标题条（醒目区分，与背景图拉开对比） -->
+    <color name="idea_header">#F57C00</color>
+    <color name="und_header">#7B1FA2</color>
+
     <!-- 半透明遮罩：调到 12% 白，让背景图更明显 -->
     <color name="scrim">#1FFFFFFF</color>
 </resources>
