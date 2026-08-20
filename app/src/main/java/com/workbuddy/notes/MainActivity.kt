@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         searchBox.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                activeFragment()?.setSearch(s?.toString() ?: "")
+                setActiveSearch(s?.toString() ?: "")
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         if (searchBox.text.isNotEmpty()) {
             searchBox.setText("")
         } else {
-            activeFragment()?.setSearch("")
+            setActiveSearch("")
         }
         return true
     }
@@ -105,6 +105,15 @@ class MainActivity : AppCompatActivity() {
         "idea" -> idea
         "und" -> und
         else -> quad
+    }
+
+    /** 把搜索词分发到当前 Tab 对应的 Fragment（Fragment 基类没有 setSearch）。 */
+    private fun setActiveSearch(q: String) {
+        when (activeTag) {
+            "quad" -> quad.setSearch(q)
+            "idea" -> idea.setSearch(q)
+            "und" -> und.setSearch(q)
+        }
     }
 
     private fun showMenu(anchor: android.view.View) {

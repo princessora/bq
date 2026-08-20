@@ -123,7 +123,7 @@ class RecycleBinActivity : AppCompatActivity() {
         note.deleted = false
         note.deletedAt = 0
         NotesStore.save()
-        WidgetProvider.updateAll(this)
+        NotesWidgetProvider.updateAll(this)
         recreate()
     }
 
@@ -135,7 +135,7 @@ class RecycleBinActivity : AppCompatActivity() {
                 cleanAttachments(note)
                 NotesStore.all().remove(note)
                 NotesStore.save()
-                WidgetProvider.updateAll(this)
+                NotesWidgetProvider.updateAll(this)
                 recreate()
             }
             .setNegativeButton("取消", null)
@@ -152,7 +152,7 @@ class RecycleBinActivity : AppCompatActivity() {
                 items.forEach { cleanAttachments(it) }
                 NotesStore.all().removeAll(items)
                 NotesStore.save()
-                WidgetProvider.updateAll(this)
+                NotesWidgetProvider.updateAll(this)
                 recreate()
             }
             .setNegativeButton("取消", null)
