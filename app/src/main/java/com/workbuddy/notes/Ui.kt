@@ -43,6 +43,8 @@ object Ui {
         onOk: () -> Unit
     ): AlertDialog {
         val dp = context.resources.displayMetrics.density
+        val initialText = note.text
+        var saved = false
 
         val scroll = ScrollView(context).apply {
             setPadding((16 * dp).toInt(), (4 * dp).toInt(), (16 * dp).toInt(), 0)
@@ -218,6 +220,7 @@ object Ui {
             .setTitle(title)
             .setView(scroll)
             .setPositiveButton("保存") { _, _ ->
+                saved = true
                 note.text = et.text.toString().trim()
                 note.tags = etTags.text.toString().trim()
                 note.pinned = cbPin.isChecked
@@ -228,7 +231,40 @@ object Ui {
             .setNegativeButton("取消", null)
             .create()
         dialog.show()
+
+        // 防误丢：内容有改动但没保存时，点「取消」或按返回先确认，避免辛苦写的内容被误触丢掉
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setOnClickListener {
+                if (et.text.toString() != initialText) {
+                    confirmDiscard(context, dialog) { dialog.dismiss() }
+                } else {
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == android.view.KeyEvent.KEYCODE_BACK) {
+                if (et.text.toString() != initialText) {
+                    confirmDiscard(context, dialog) { dialog.dismiss() }
+                } else {
+                    dialog.dismiss()
+                }
+                true
+            } else {
+                false
+            }
+        }
         return dialog
+    }
+
+    /** 未保存改动确认框：点「继续编辑」不关弹窗，点「放弃修改」执行 [discard]。 */
+    private fun confirmDiscard(context: Context, dialog: AlertDialog, discard: () -> Unit) {
+        AlertDialog.Builder(context)
+            .setTitle("放弃修改？")
+            .setMessage("内容有改动但尚未保存，确定放弃？")
+            .setPositiveButton("继续编辑", null)
+            .setNegativeButton("放弃修改") { _, _ -> discard() }
+            .show()
     }
 
     private fun mkBtnRow(

@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity() {
         NotesStore.init(this)
         // 启动时顺手清理过期回收站项目
         purgeExpiredTrash()
+        // 每日数据快照归档（保留最近 7 天，防主文件+备份同时损坏的极端情况）
+        archiveDailySnapshot()
 
         setContentView(R.layout.activity_main)
         bottomNav = findViewById(R.id.bottomNav)
@@ -345,6 +347,26 @@ class MainActivity : AppCompatActivity() {
             }
             all.removeAll(expired)
             NotesStore.save()
+        }
+    }
+
+    /** 每日快照：把当天的 notes.json 归档到 files/backups/，保留最近 7 份，更早的自动清理。 */
+    private fun archiveDailySnapshot() {
+        try {
+            val dir = File(filesDir, "backups")
+            dir.mkdirs()
+            val today = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US)
+                .format(java.util.Date())
+            val dst = File(dir, "notes-$today.json")
+            val src = File(filesDir, "notes.json")
+            if (!dst.exists() && src.exists()) {
+                src.copyTo(dst, overwrite = false)
+            }
+            dir.listFiles()?.filter { it.name.startsWith("notes-") }
+                ?.sortedByDescending { it.name }
+                ?.drop(7)
+                ?.forEach { it.delete() }
+        } catch (_: Exception) {
         }
     }
 
