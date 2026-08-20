@@ -37,11 +37,11 @@ object Cards {
         val tvAudioDur = view.findViewById<TextView>(R.id.tvAudioDur)
         val tvTags = view.findViewById<TextView>(R.id.tvTags)
         val tvMeta = view.findViewById<TextView>(R.id.tvMeta)
-        val btnEdit = view.findViewById<Button>(R.id.btnEdit)
-        val btnColor = view.findViewById<Button>(R.id.btnColor)
-        val btnMove = view.findViewById<Button>(R.id.btnMove)
-        val btnDelete = view.findViewById<Button>(R.id.btnDelete)
-        val btnShare = view.findViewById<Button>(R.id.btnShare)
+        val btnEdit = view.findViewById<TextView>(R.id.btnEdit)
+        val btnColor = view.findViewById<TextView>(R.id.btnColor)
+        val btnMove = view.findViewById<TextView>(R.id.btnMove)
+        val btnDelete = view.findViewById<TextView>(R.id.btnDelete)
+        val btnShare = view.findViewById<TextView>(R.id.btnShare)
 
         val bg = view.background
         if (bg is GradientDrawable) {

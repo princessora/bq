@@ -107,6 +107,16 @@ object Ui {
             }
         }
 
+        // 语音信息
+        val tvAudio = TextView(context).apply {
+            id = R.id.editor_audio_info
+            setPadding(0, (6 * dp).toInt(), 0, 0)
+            textSize = 13f
+            text = if (!note.audioPath.isNullOrBlank()) {
+                "已添加语音 · ${note.audioDurationMs / 1000} 秒"
+            } else "未添加语音"
+        }
+
         // 日期信息
         val tvDate = TextView(context).apply {
             id = R.id.editor_date_info
@@ -197,6 +207,7 @@ object Ui {
         layout.addView(row2)
         layout.addView(ivPreview)
         layout.addView(ivDraw)
+        layout.addView(tvAudio)
         layout.addView(tvDate)
         layout.addView(tvLoc)
         layout.addView(etTags)

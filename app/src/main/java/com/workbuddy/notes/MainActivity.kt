@@ -229,9 +229,55 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAppLock() {
         val dp = resources.displayMetrics.density
-        val layout = LinearLayout(this).apply {
+        // 全屏容器：背景图 + 半透蒙层 + 居中的解锁面板
+        val root = android.widget.FrameLayout(this).apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundDrawable(
+                android.graphics.drawable.BitmapDrawable(
+                    resources,
+                    android.graphics.BitmapFactory.decodeResource(resources, R.drawable.lock_bg)
+                )
+            )
+        }
+        // 半透黑蒙层，让背景图隐约可见且保证前景文字可读
+        val scrim = android.view.View(this).apply {
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(0x99000000.toInt())
+        }
+        root.addView(scrim)
+
+        // 居中面板
+        val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding((24 * dp).toInt(), (8 * dp).toInt(), (24 * dp).toInt(), 0)
+            val pad = (24 * dp).toInt()
+            setPadding(pad, pad, pad, pad)
+            val cardBg = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = (16 * dp)
+                setColor(0xCCFFFFFF.toInt())
+            }
+            background = cardBg
+            val cardLp = android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                leftMargin = (24 * dp).toInt()
+                rightMargin = (24 * dp).toInt()
+                gravity = android.view.Gravity.CENTER
+            }
+            layoutParams = cardLp
+        }
+
+        val title = android.widget.TextView(this).apply {
+            text = "🔒 已锁定"
+            textSize = 20f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setTextColor(0xFF212121.toInt())
         }
         val et = EditText(this).apply {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or
@@ -239,16 +285,36 @@ class MainActivity : AppCompatActivity() {
             hint = "请输入密码"
         }
         val fp = Button(this).apply { text = "使用指纹解锁" }
-        layout.addView(et)
-        layout.addView(fp)
+        card.addView(title)
+        val gap1 = android.view.View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, (12 * dp).toInt()
+            )
+        }
+        card.addView(gap1)
+        card.addView(et)
+        val gap2 = android.view.View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, (8 * dp).toInt()
+            )
+        }
+        card.addView(gap2)
+        card.addView(fp)
+
+        root.addView(card)
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("🔒 已锁定")
-            .setView(layout)
+            .setView(root)
             .setCancelable(false)
             .setPositiveButton("解锁") { _, _ -> tryUnlock(et.text.toString(), null) }
             .create()
         dialog.show()
+        // 让背景图真正铺满：去掉系统 dialog 默认的边距/背景
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
+        dialog.window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
         fp.setOnClickListener { startBiometric(dialog) }
     }
 

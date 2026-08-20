@@ -88,7 +88,7 @@
         android:textSize="12sp"
         android:visibility="gone" />
 
-    <!-- 五个按钮等宽平分：改/色/移/删/享 -->
+    <!-- 五个动作按钮等宽平分：改/色/移/删/享（用 TextView+圆角 drawable，避免 MaterialButton 的 inset/icon 占位把字挤掉一半） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -96,58 +96,78 @@
         android:orientation="horizontal"
         android:weightSum="5">
 
-        <Button
+        <TextView
             android:id="@+id/btnEdit"
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="36dp"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:background="@drawable/btn_card_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
             android:text="改"
-            android:textSize="11sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <Button
+        <TextView
             android:id="@+id/btnColor"
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="36dp"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:background="@drawable/btn_card_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
             android:text="色"
-            android:textSize="11sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <Button
+        <TextView
             android:id="@+id/btnMove"
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="36dp"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:background="@drawable/btn_card_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
             android:text="移"
-            android:textSize="11sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <Button
+        <TextView
             android:id="@+id/btnDelete"
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="36dp"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:background="@drawable/btn_card_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
             android:text="删"
-            android:textSize="11sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-        <Button
+        <TextView
             android:id="@+id/btnShare"
             android:layout_width="0dp"
-            android:layout_height="30dp"
+            android:layout_height="36dp"
             android:layout_weight="1"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:background="@drawable/btn_card_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
             android:text="享"
-            android:textSize="11sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>
