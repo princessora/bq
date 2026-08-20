@@ -42,14 +42,16 @@ object NotesRepository {
     }
 
     /** 读取并解析一个 JSON 文件；文件不存在 / 内容为空 / 解析失败都返回 null（不抛异常） */
-    private fun readList(file: File): MutableList<Note>? = try {
-        if (!file.exists()) return null
-        val json = file.readText(StandardCharsets.UTF_8)
-        if (json.isBlank()) return null
-        val type = object : TypeToken<MutableList<Note>>() {}.type
-        gson.fromJson<MutableList<Note>>(json, type) ?: return null
-    } catch (e: Exception) {
-        null
+    private fun readList(file: File): MutableList<Note>? {
+        return try {
+            if (!file.exists()) return null
+            val json = file.readText(StandardCharsets.UTF_8)
+            if (json.isBlank()) return null
+            val type = object : TypeToken<MutableList<Note>>() {}.type
+            gson.fromJson<MutableList<Note>>(json, type) ?: return null
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun save(context: Context, notes: List<Note>) {
