@@ -128,6 +128,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var favOnly = false
+    /** 当前应用锁弹窗（防止密码错误重试时叠出多个全屏锁屏框） */
+    private var lockDialog: AlertDialog? = null
 
     private fun showMenu(anchor: android.view.View) {
         val popup = PopupMenu(this, anchor)
@@ -142,7 +144,13 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 1 -> startActivity(Intent(this, RecycleBinActivity::class.java))
                 2 -> showExportChoice()
-                6 -> importLauncher.launch(arrayOf("application/zip"))
+                6 -> importLauncher.launch(
+                    arrayOf(
+                        "application/zip",
+                        "application/x-zip-compressed",
+                        "application/octet-stream"
+                    )
+                )
                 7 -> toggleFavOnly()
                 3 -> toggleDark()
                 4 -> showPrivacyLock()
@@ -352,9 +360,14 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         AppLock.onPause()
+        // 离开页面/退后台时停止语音播放，避免声音残留
+        AudioPlayer.stop()
     }
 
     private fun showAppLock() {
+        // 防止旧锁屏框未关导致叠框
+        lockDialog?.dismiss()
+        lockDialog = null
         val dp = resources.displayMetrics.density
         // 全屏容器：背景图 + 半透蒙层 + 居中的解锁面板
         val root = android.widget.FrameLayout(this).apply {
@@ -436,6 +449,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("解锁") { _, _ -> tryUnlock(et.text.toString(), null) }
             .create()
         dialog.show()
+        lockDialog = dialog
         // 让背景图真正铺满：去掉系统 dialog 默认的边距/背景
         dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
         dialog.window?.setLayout(
@@ -449,6 +463,8 @@ class MainActivity : AppCompatActivity() {
         val hash = AppSettings.getPinHash(this)
         if (hash != null && AppSettings.hashPin(pin) == hash) {
             AppLock.unlocked = true
+            lockDialog?.dismiss()
+            lockDialog = null
             dialog?.dismiss()
         } else {
             AlertDialog.Builder(this)

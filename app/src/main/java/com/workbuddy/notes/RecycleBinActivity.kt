@@ -21,13 +21,17 @@ class RecycleBinActivity : AppCompatActivity() {
         NotesStore.init(this)
         purgeExpired()
 
+        val dark = AppSettings.isDark(this)
+
         val title = TextView(this).apply {
             text = "🗑 回收站"
             textSize = 20f
+            setTextColor(if (dark) 0xFFECEFF1.toInt() else 0xFF212121.toInt())
             setPadding(20, 24, 20, 12)
         }
         val emptyHint = TextView(this).apply {
             text = "（空空如也，删掉的便签会在这里停留 7 天）"
+            setTextColor(if (dark) 0xFFB0BEC5.toInt() else 0xFF757575.toInt())
             setPadding(20, 12, 20, 12)
         }
         container = LinearLayout(this).apply {
@@ -51,7 +55,7 @@ class RecycleBinActivity : AppCompatActivity() {
         }
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(resources.getColor(android.R.color.background_light, null))
+            setBackgroundColor(if (dark) 0xFF121212.toInt() else 0xFFFFFFFF.toInt())
             addView(title)
             addView(emptyHint)
             addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -91,6 +95,7 @@ class RecycleBinActivity : AppCompatActivity() {
 
     private fun buildRow(note: Note): LinearLayout {
         val dp = resources.displayMetrics.density
+        val dark = AppSettings.isDark(this)
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(20, 10, 20, 10)
@@ -99,6 +104,7 @@ class RecycleBinActivity : AppCompatActivity() {
             text = if (note.locked) "🔒 加密便签" else note.text.takeIf { it.isNotBlank() }
                 ?: (if (note.hasAnyImage()) "[图片/涂鸦]" else if (note.audioPath != null) "[语音]" else "（空便签）")
             textSize = 14f
+            setTextColor(if (dark) 0xFFECEFF1.toInt() else 0xFF212121.toInt())
             maxLines = 2
             ellipsize = android.text.TextUtils.TruncateAt.END
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)

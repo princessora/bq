@@ -142,7 +142,9 @@ class DrawActivity : AppCompatActivity() {
         }
 
         fun render(): Bitmap {
-            val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val w = maxOf(width, 1)
+            val h = maxOf(height, 1)
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             val c = Canvas(bmp)
             c.drawColor(Color.WHITE)
             strokes.forEach { (p, pt) -> c.drawPath(p, pt) }
