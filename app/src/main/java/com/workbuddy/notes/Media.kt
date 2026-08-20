@@ -1,6 +1,8 @@
 package com.workbuddy.notes
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
@@ -39,6 +41,28 @@ object Media {
         try {
             File(path).delete()
         } catch (_: Exception) {
+        }
+    }
+
+    /**
+     * 按需采样解码图片（防 OOM）：先读边界算 inSampleSize，再解码缩小后的位图。
+     * 卡片缩略图 / 大图预览 / 编辑弹窗预览都走这里，避免全尺寸解码大照片把内存打爆。
+     */
+    fun decodeSampled(path: String?, reqW: Int, reqH: Int): Bitmap? {
+        if (path.isNullOrBlank()) return null
+        return try {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            var sample = 1
+            while (bounds.outWidth / sample > reqW || bounds.outHeight / sample > reqH) {
+                sample *= 2
+            }
+            BitmapFactory.decodeFile(
+                path,
+                BitmapFactory.Options().apply { inSampleSize = sample }
+            )
+        } catch (e: Exception) {
+            null
         }
     }
 }

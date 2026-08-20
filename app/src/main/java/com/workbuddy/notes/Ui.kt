@@ -84,10 +84,9 @@ object Ui {
             maxHeight = (180 * dp).toInt()
         }
         if (!note.imagePath.isNullOrBlank()) {
-            try {
-                ivPreview.setImageURI(Uri.fromFile(File(note.imagePath!!)))
+            Media.decodeSampled(note.imagePath, 512, 512)?.let {
+                ivPreview.setImageBitmap(it)
                 ivPreview.visibility = View.VISIBLE
-            } catch (_: Exception) {
             }
         }
 
@@ -100,10 +99,9 @@ object Ui {
             maxHeight = (160 * dp).toInt()
         }
         if (!note.drawingPath.isNullOrBlank()) {
-            try {
-                ivDraw.setImageURI(Uri.fromFile(File(note.drawingPath!!)))
+            Media.decodeSampled(note.drawingPath, 512, 512)?.let {
+                ivDraw.setImageBitmap(it)
                 ivDraw.visibility = View.VISIBLE
-            } catch (_: Exception) {
             }
         }
 
@@ -265,10 +263,9 @@ object Ui {
         if (path.isNullOrBlank()) {
             iv.visibility = View.GONE
         } else {
-            try {
-                iv.setImageURI(Uri.fromFile(File(path)))
+            Media.decodeSampled(path, 512, 512)?.let {
+                iv.setImageBitmap(it)
                 iv.visibility = View.VISIBLE
-            } catch (_: Exception) {
             }
         }
     }
@@ -280,10 +277,9 @@ object Ui {
         if (path.isNullOrBlank()) {
             iv.visibility = View.GONE
         } else {
-            try {
-                iv.setImageURI(Uri.fromFile(File(path)))
+            Media.decodeSampled(path, 512, 512)?.let {
+                iv.setImageBitmap(it)
                 iv.visibility = View.VISIBLE
-            } catch (_: Exception) {
             }
         }
     }

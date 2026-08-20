@@ -38,10 +38,11 @@ object ShareUtil {
         }
     }
 
-    /** 渲染便签到 Bitmap（薄荷底 + 文字 + 标签 + 日期/农历）。 */
+    /** 渲染便签到 Bitmap（薄荷底 + 文字 + 标签 + 日期/农历）。超长便签截断，防止位图过大 OOM。 */
     private fun renderNote(note: Note): Bitmap {
         val w = 800
         val padding = 48
+        val maxLines = 120
         val paint = Paint().apply {
             color = Color.parseColor("#212121")
             textSize = 34f
@@ -49,7 +50,9 @@ object ShareUtil {
         }
         val display = if (note.locked) "🔒 加密便签" else note.text.takeIf { it.isNotBlank() }
             ?: (if (note.hasAnyImage()) "[图片 / 涂鸦]" else if (note.audioPath != null) "[语音]" else "（空便签）")
-        val lines = wrap(display, paint, w - 2 * padding)
+        val wrapped = wrap(display, paint, w - 2 * padding)
+        val truncated = wrapped.size > maxLines
+        val lines = if (truncated) wrapped.subList(0, maxLines) else wrapped
         val lineH = (paint.textSize * 1.45).toInt()
 
         val tags = note.tagList()
@@ -63,6 +66,10 @@ object ShareUtil {
         var y = padding + paint.textSize.toInt()
         lines.forEach { line ->
             c.drawText(line, padding.toFloat(), y.toFloat(), paint)
+            y += lineH
+        }
+        if (truncated) {
+            c.drawText("…（内容过长，已截断）", padding.toFloat(), y.toFloat(), paint)
             y += lineH
         }
         val small = Paint().apply {
@@ -262,7 +269,7 @@ object Export {
     }
 
     private fun headerOf(note: Note): String = when (note.module) {
-        Module.QUAD -> "四象限 · ${Note.QUAD_ZONES[note.quadZone - 1]}"
+        Module.QUAD -> "四象限 · ${note.quadTitle()}"
         Module.IDEA -> "点子存放处"
         Module.UNDECIDED -> "未想清楚的事"
     }

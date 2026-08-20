@@ -68,6 +68,10 @@ data class Note(
     fun tagList(): List<String> =
         tags?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() } ?: emptyList()
 
+    /** 象限标题（越界兜底到第一象限，防止导入的坏数据导致数组越界崩溃） */
+    fun quadTitle(): String =
+        QUAD_ZONES.getOrElse(quadZone - 1) { QUAD_ZONES.first() }
+
     /** 是否含图（配图或涂鸦） */
     fun hasAnyImage(): Boolean =
         (!imagePath.isNullOrBlank()) || (!drawingPath.isNullOrBlank())

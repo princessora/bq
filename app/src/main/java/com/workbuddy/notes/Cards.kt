@@ -107,19 +107,19 @@ object Cards {
             tvText.text = highlightSpans(note.text, q)
         }
 
-        // ---- 配图 ----
+        // ---- 配图（采样解码缩略图，防大图 OOM）----
         if (note.imagePath != null && File(note.imagePath!!).exists()) {
             ivImage.visibility = View.VISIBLE
-            ivImage.setImageURI(Uri.fromFile(File(note.imagePath!!)))
+            Media.decodeSampled(note.imagePath!!, 512, 512)?.let { ivImage.setImageBitmap(it) }
             ivImage.setOnClickListener { showFullImage(context, note.imagePath!!) }
         } else {
             ivImage.visibility = View.GONE
         }
 
-        // ---- 涂鸦 ----
+        // ---- 涂鸦（采样解码缩略图）----
         if (note.drawingPath != null && File(note.drawingPath!!).exists()) {
             ivDraw.visibility = View.VISIBLE
-            ivDraw.setImageURI(Uri.fromFile(File(note.drawingPath!!)))
+            Media.decodeSampled(note.drawingPath!!, 512, 512)?.let { ivDraw.setImageBitmap(it) }
             ivDraw.setOnClickListener { showFullImage(context, note.drawingPath!!) }
         } else {
             ivDraw.visibility = View.GONE
@@ -215,10 +215,10 @@ object Cards {
         return sp
     }
 
-    /** 点击配图后弹出大图查看 */
+    /** 点击配图后弹出大图查看（采样到 2048 上限，兼顾清晰度与内存） */
     private fun showFullImage(context: Context, path: String) {
         val iv = ImageView(context).apply {
-            setImageURI(Uri.fromFile(File(path)))
+            Media.decodeSampled(path, 2048, 2048)?.let { setImageBitmap(it) }
             adjustViewBounds = true
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
