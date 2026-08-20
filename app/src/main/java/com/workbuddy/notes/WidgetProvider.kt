@@ -28,6 +28,21 @@ class NotesWidgetProvider : AppWidgetProvider() {
             NotesStore.init(context)
             val rv = RemoteViews(context.packageName, R.layout.widget)
 
+            // 深色适配：跟随 App 深色模式设置（夜间桌面不刺眼）
+            val dark = AppSettings.isDark(context)
+            rv.setInt(
+                R.id.widget_root, "setBackgroundColor",
+                if (dark) 0xFF1E1E1E.toInt() else 0xFFEAF6F0.toInt()
+            )
+            rv.setTextColor(
+                R.id.widget_title,
+                if (dark) 0xFFECEFF1.toInt() else 0xFF1F3D2E.toInt()
+            )
+            rv.setTextColor(
+                R.id.widget_text,
+                if (dark) 0xFFB0BEC5.toInt() else 0xFF212121.toInt()
+            )
+
             val notes = NotesStore.all()
                 .filter { !it.deleted }
                 .sortedByDescending { it.createdAt }

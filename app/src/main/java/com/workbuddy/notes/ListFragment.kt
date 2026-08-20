@@ -29,6 +29,7 @@ class ListFragment : Fragment() {
     private lateinit var tvTitle: TextView
     private var notes: MutableList<Note> = mutableListOf()
     private var searchQuery: String = ""
+    private var favOnly: Boolean = false
 
     private var editingNote: Note? = null
     private var editingDialog: AlertDialog? = null
@@ -137,6 +138,12 @@ class ListFragment : Fragment() {
 
     fun setSearch(q: String) {
         searchQuery = q.trim()
+        refresh()
+    }
+
+    /** 只看收藏过滤开关（菜单「⭐ 只看收藏」触发） */
+    fun setFavOnly(on: Boolean) {
+        favOnly = on
         refresh()
     }
 
@@ -289,6 +296,7 @@ class ListFragment : Fragment() {
         notes = NotesStore.all()
         containerNotes.removeAllViews()
         notes.filter { it.module == module && !it.deleted }
+            .filter { !favOnly || it.favorite }
             .filter { matchSearch(it) }
             .sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.createdAt })
             .forEach { note ->
@@ -302,7 +310,8 @@ class ListFragment : Fragment() {
                         onDelete = { softDelete(note) },
                         onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
                         onUnlock = { Unlock.verify(requireContext()) { openEditor("编辑", note) } },
-                        onLocation = { openMap(note) }
+                        onLocation = { openMap(note) },
+                        highlight = searchQuery
                     )
                 )
             }

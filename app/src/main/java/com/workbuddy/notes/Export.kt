@@ -229,6 +229,38 @@ object Export {
         }
     }
 
+    /**
+     * 导出完整备份包（zip：notes.json + attachments/ 附件文件）。
+     * 用于换机 / 卸载重装前的数据迁移，可配合「导入备份」恢复。
+     * 附件按 zip 内相对路径 attachments/<文件名> 存放，导入时再拼回新设备的 filesDir。
+     */
+    fun exportBackup(context: Context, notes: List<Note>): File {
+        val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+            ?: context.filesDir
+        val file = File(dir, "札记备份_${System.currentTimeMillis()}.zip")
+        val attachDir = Media.attachDir(context).absolutePath
+        ZipOutputStream(FileOutputStream(file)).use { zos ->
+            zos.putNextEntry(ZipEntry("notes.json"))
+            zos.write(NotesRepository.toJson(notes).toByteArray(Charsets.UTF_8))
+            zos.closeEntry()
+
+            val seen = mutableSetOf<String>()
+            notes.forEach { note ->
+                listOf(note.imagePath, note.audioPath, note.drawingPath).forEach { p ->
+                    if (!p.isNullOrBlank() && seen.add(p) && p.startsWith(attachDir)) {
+                        val src = File(p)
+                        if (src.exists()) {
+                            zos.putNextEntry(ZipEntry("attachments/${src.name}"))
+                            src.inputStream().use { it.copyTo(zos) }
+                            zos.closeEntry()
+                        }
+                    }
+                }
+            }
+        }
+        return file
+    }
+
     private fun headerOf(note: Note): String = when (note.module) {
         Module.QUAD -> "四象限 · ${Note.QUAD_ZONES[note.quadZone - 1]}"
         Module.IDEA -> "点子存放处"

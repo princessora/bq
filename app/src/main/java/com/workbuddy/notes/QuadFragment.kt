@@ -27,6 +27,7 @@ class QuadFragment : Fragment() {
     private val zones = mutableMapOf<Int, ViewGroup>()
     private var notes: MutableList<Note> = mutableListOf()
     private var searchQuery: String = ""
+    private var favOnly: Boolean = false
 
     private var editingNote: Note? = null
     private var editingDialog: AlertDialog? = null
@@ -105,6 +106,12 @@ class QuadFragment : Fragment() {
     // ---------- 搜索 ----------
     fun setSearch(q: String) {
         searchQuery = q.trim()
+        refresh()
+    }
+
+    /** 只看收藏过滤开关（菜单「⭐ 只看收藏」触发） */
+    fun setFavOnly(on: Boolean) {
+        favOnly = on
         refresh()
     }
 
@@ -259,6 +266,7 @@ class QuadFragment : Fragment() {
         zones.forEach { (zone, container) ->
             container.removeAllViews()
             notes.filter { it.module == Module.QUAD && it.quadZone == zone && !it.deleted }
+                .filter { !favOnly || it.favorite }
                 .filter { matchSearch(it) }
                 .sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.createdAt })
                 .forEach { note ->
@@ -272,7 +280,8 @@ class QuadFragment : Fragment() {
                             onDelete = { softDelete(note) },
                             onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
                             onUnlock = { Unlock.verify(requireContext()) { openEditor(Note.QUAD_ZONES[zone - 1], zone, note) } },
-                            onLocation = { openMap(note) }
+                            onLocation = { openMap(note) },
+                            highlight = searchQuery
                         )
                     )
                 }

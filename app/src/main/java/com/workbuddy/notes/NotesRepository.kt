@@ -34,4 +34,17 @@ object NotesRepository {
             e.printStackTrace()
         }
     }
+
+    /** 导出备份用：把便签列表序列化为 JSON 字符串 */
+    fun toJson(notes: List<Note>): String = gson.toJson(notes)
+
+    /** 导入备份用：解析 JSON 字符串为便签列表（解析失败返回空表） */
+    fun fromJson(json: String): MutableList<Note> = try {
+        gson.fromJson<MutableList<Note>>(
+            json,
+            object : TypeToken<MutableList<Note>>() {}.type
+        ) ?: mutableListOf()
+    } catch (e: Exception) {
+        mutableListOf()
+    }
 }

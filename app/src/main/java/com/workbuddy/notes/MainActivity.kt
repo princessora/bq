@@ -1,12 +1,14 @@
 package com.workbuddy.notes
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -16,6 +18,9 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
 
 /**
  * 主容器：顶部栏（标题 + 搜索 + ☰菜单）+ 底部三个 Tab（四象限 / 点子 / 未想清）。
@@ -122,10 +127,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var favOnly = false
+
     private fun showMenu(anchor: android.view.View) {
         val popup = PopupMenu(this, anchor)
         popup.menu.add(0, 1, 0, "🗑 回收站")
         popup.menu.add(0, 2, 0, "📤 导出备份")
+        popup.menu.add(0, 6, 0, "📥 导入备份")
+        popup.menu.add(0, 7, 0, if (favOnly) "⭐ 取消收藏筛选" else "⭐ 只看收藏")
         popup.menu.add(0, 3, 0, if (AppSettings.isDark(this)) "☀ 日间模式" else "🌙 夜间模式")
         popup.menu.add(0, 4, 0, "🔒 隐私锁")
         popup.menu.add(0, 5, 0, "ℹ 关于")
@@ -133,6 +142,8 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 1 -> startActivity(Intent(this, RecycleBinActivity::class.java))
                 2 -> showExportChoice()
+                6 -> importLauncher.launch(arrayOf("application/zip"))
+                7 -> toggleFavOnly()
                 3 -> toggleDark()
                 4 -> showPrivacyLock()
                 5 -> showAbout()
@@ -142,18 +153,134 @@ class MainActivity : AppCompatActivity() {
         popup.show()
     }
 
+    /** ⭐ 只看收藏：三区统一切换过滤视图 */
+    private fun toggleFavOnly() {
+        favOnly = !favOnly
+        quad.setFavOnly(favOnly)
+        idea.setFavOnly(favOnly)
+        und.setFavOnly(favOnly)
+    }
+
     private fun showExportChoice() {
         AlertDialog.Builder(this)
             .setTitle("导出备份")
-            .setItems(arrayOf("导出为 PDF", "导出为 Word (DOCX)")) { _, which ->
+            .setItems(
+                arrayOf("导出为 PDF", "导出为 Word (DOCX)", "导出完整备份包 (ZIP，含附件，可导入恢复)")
+            ) { _, which ->
                 val notes = NotesStore.all().filter { !it.deleted }
-                val file = if (which == 0) Export.exportPdf(this, notes)
-                else Export.exportDocx(this, notes)
-                val mime = if (which == 0) "application/pdf"
-                else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                Export.shareFile(this, file, mime)
+                when (which) {
+                    0 -> {
+                        val file = Export.exportPdf(this, notes)
+                        Export.shareFile(this, file, "application/pdf")
+                    }
+                    1 -> {
+                        val file = Export.exportDocx(this, notes)
+                        Export.shareFile(
+                            this, file,
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        )
+                    }
+                    else -> {
+                        val file = Export.exportBackup(this, notes)
+                        Export.shareFile(this, file, "application/zip")
+                    }
+                }
             }
             .show()
+    }
+
+    // ---------- 导入备份 ----------
+    private val importLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) promptImportMode(uri)
+    }
+
+    private fun promptImportMode(uri: Uri) {
+        AlertDialog.Builder(this)
+            .setTitle("导入备份")
+            .setMessage("选择导入方式：")
+            .setItems(arrayOf("合并到现有数据", "清空现有数据后导入")) { _, which ->
+                doImport(uri, replace = which == 1)
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun doImport(uri: Uri, replace: Boolean) {
+        try {
+            // 先解析成功再动现有数据，避免解析失败时误清空
+            val imported = parseBackup(uri)
+            val all = NotesStore.all()
+            if (replace) {
+                all.forEach { note ->
+                    Media.deleteFile(note.imagePath)
+                    Media.deleteFile(note.audioPath)
+                    Media.deleteFile(note.drawingPath)
+                }
+                all.clear()
+            }
+            val existingIds = all.map { it.id }.toSet()
+            val added = imported.filter { it.id !in existingIds }
+            all.addAll(added)
+            NotesStore.save()
+            refreshAll()
+            AlertDialog.Builder(this)
+                .setTitle("导入完成")
+                .setMessage("共导入 ${added.size} 条便签（含附件）。")
+                .setPositiveButton("知道了", null)
+                .show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            AlertDialog.Builder(this)
+                .setTitle("导入失败")
+                .setMessage("备份文件无法解析，请确认选择的是本应用导出的 ZIP 备份包。")
+                .setPositiveButton("知道了", null)
+                .show()
+        }
+    }
+
+    /** 解析 ZIP 备份：读 notes.json，把 attachments/* 解压到私有目录并重写 Note 附件绝对路径。 */
+    private fun parseBackup(uri: Uri): MutableList<Note> {
+        val attachDir = Media.attachDir(this)
+        val extracted = mutableMapOf<String, File>()
+        val json = StringBuilder()
+        contentResolver.openInputStream(uri)?.use { input ->
+            ZipInputStream(input).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    if (!entry.isDirectory) {
+                        when {
+                            entry.name.endsWith("notes.json") ->
+                                json.append(zis.readBytes().toString(Charsets.UTF_8))
+                            entry.name.contains("attachments/") -> {
+                                val name = entry.name.substringAfterLast('/')
+                                val dst = File(attachDir, name)
+                                FileOutputStream(dst).use { zis.copyTo(it) }
+                                extracted[name] = dst
+                            }
+                        }
+                    }
+                    zis.closeEntry()
+                    entry = zis.nextEntry
+                }
+            }
+        }
+        val notes = NotesRepository.fromJson(json.toString())
+        notes.forEach { note ->
+            val map = listOf(note.imagePath, note.audioPath, note.drawingPath)
+                .filter { !it.isNullOrBlank() }
+                .associateWith { File(it).name }
+            map.forEach { (old, name) ->
+                val dst = extracted[name] ?: return@forEach
+                when (old) {
+                    note.imagePath -> note.imagePath = dst.absolutePath
+                    note.audioPath -> note.audioPath = dst.absolutePath
+                    note.drawingPath -> note.drawingPath = dst.absolutePath
+                }
+            }
+        }
+        return notes
     }
 
     private fun toggleDark() {

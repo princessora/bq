@@ -5,6 +5,9 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.BackgroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -27,7 +30,8 @@ object Cards {
         onDelete: () -> Unit,
         onShare: () -> Unit,
         onUnlock: () -> Unit,
-        onLocation: () -> Unit
+        onLocation: () -> Unit,
+        highlight: String? = null
     ): View {
         val view = LayoutInflater.from(context).inflate(R.layout.item_note, null)
 
@@ -96,6 +100,11 @@ object Cards {
             "（空便签）"
         } else {
             note.text
+        }
+        // 搜索高亮：命中词标黄色底
+        val q = highlight?.trim()
+        if (!q.isNullOrBlank() && note.text.isNotBlank()) {
+            tvText.text = highlightSpans(note.text, q)
         }
 
         // ---- 配图 ----
@@ -185,6 +194,25 @@ object Cards {
             parts += "📍${note.locationName ?: "坐标"}"
         }
         return parts.joinToString(" ")
+    }
+
+    /** 搜索词高亮：所有不区分大小写的命中处加黄色背景 */
+    private fun highlightSpans(text: String, query: String): Spannable {
+        val sp = SpannableString(text)
+        val q = query.lowercase()
+        val lower = text.lowercase()
+        var from = 0
+        while (true) {
+            val idx = lower.indexOf(q, from)
+            if (idx < 0) break
+            sp.setSpan(
+                BackgroundColorSpan(0x66FFC107),
+                idx, idx + q.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            from = idx + q.length
+        }
+        return sp
     }
 
     /** 点击配图后弹出大图查看 */
