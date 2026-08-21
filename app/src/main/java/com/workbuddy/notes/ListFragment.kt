@@ -298,7 +298,12 @@ class ListFragment : Fragment() {
         notes.filter { it.module == module && !it.deleted }
             .filter { !favOnly || it.favorite }
             .filter { matchSearch(it) }
-            .sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.createdAt })
+            .sortedWith(
+                // 置顶 > 未完成(创建时间倒序) > 已完成(创建时间倒序)
+                compareByDescending<Note> { it.pinned }
+                    .thenBy { it.done }
+                    .thenByDescending { it.createdAt }
+            )
             .forEach { note ->
                 containerNotes.addView(
                     Cards.create(
@@ -311,10 +316,19 @@ class ListFragment : Fragment() {
                         onShare = { ShareUtil.shareNoteImage(requireContext(), note) },
                         onUnlock = { Unlock.verify(requireContext()) { openEditor("编辑", note) } },
                         onLocation = { openMap(note) },
-                        highlight = searchQuery
+                        highlight = searchQuery,
+                        showDone = true,
+                        onToggleDone = { toggleDone(note) }
                     )
                 )
             }
+    }
+
+    /** 切换「完成」状态：toggle 后 persist+refresh（排序让完成的便签自然后移） */
+    private fun toggleDone(note: Note) {
+        note.done = !note.done
+        NotesStore.save()
+        refresh()
     }
 
     private fun matchSearch(note: Note): Boolean {
@@ -356,20 +370,32 @@ class ListFragment : Fragment() {
     }
 
     private fun showMove(note: Note) {
-        val options = if (module == Module.IDEA) {
-            arrayOf("移到「四象限归纳」", "移到「未想清楚的事」")
-        } else {
-            arrayOf("移到「四象限归纳」", "移到「点子存放处」")
+        val other = when (module) {
+            Module.IDEA -> arrayOf("移到「未想清楚的事」", "移到「碎碎念」")
+            Module.UNDECIDED -> arrayOf("移到「点子存放处」", "移到「碎碎念」")
+            else -> arrayOf("移到「点子存放处」", "移到「未想清楚的事」")
         }
+        val options = arrayOf("移到「四象限归纳」") + other
         AlertDialog.Builder(requireContext())
             .setTitle("移动便签")
             .setItems(options) { _, which ->
-                if (which == 0) {
-                    note.module = Module.QUAD
-                    note.quadZone = 1
-                } else {
-                    note.module = if (module == Module.IDEA) Module.UNDECIDED else Module.IDEA
-                    note.quadZone = 1
+                when (which) {
+                    0 -> {
+                        note.module = Module.QUAD
+                        note.quadZone = 1
+                    }
+                    1 -> {
+                        note.module = when (module) {
+                            Module.IDEA -> Module.UNDECIDED
+                            Module.UNDECIDED -> Module.IDEA
+                            else -> Module.IDEA
+                        }
+                        note.quadZone = 1
+                    }
+                    else -> {
+                        note.module = Module.MUMBLE
+                        note.quadZone = 1
+                    }
                 }
                 persist()
                 refresh()

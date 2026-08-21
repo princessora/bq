@@ -3,5 +3,6 @@
     <string name="navQuad">四象限</string>
     <string name="navIdea">点子</string>
     <string name="navUnd">未想清</string>
+    <string name="navMumble">碎碎念</string>
     <string name="appwidget_name">札记·速记</string>
 </resources>

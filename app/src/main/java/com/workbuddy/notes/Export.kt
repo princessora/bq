@@ -272,6 +272,7 @@ object Export {
         Module.QUAD -> "四象限 · ${note.quadTitle()}"
         Module.IDEA -> "点子存放处"
         Module.UNDECIDED -> "未想清楚的事"
+        Module.MUMBLE -> "碎碎念"
     }
 
     private fun buildDateLineSafe(note: Note): String? {

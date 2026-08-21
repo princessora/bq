@@ -23,8 +23,8 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 /**
- * 主容器：顶部栏（标题 + 搜索 + ☰菜单）+ 底部三个 Tab（四象限 / 点子 / 未想清）。
- * 三个 Fragment 常驻，靠 show/hide 切换，避免重复创建导致数据错位。
+ * 主容器：顶部栏（标题 + 搜索 + ☰菜单）+ 底部四个 Tab（四象限 / 点子 / 未想清 / 碎碎念）。
+ * 四个 Fragment 常驻，靠 show/hide 切换，避免重复创建导致数据错位。
  */
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var quad: QuadFragment
     private lateinit var idea: ListFragment
     private lateinit var und: ListFragment
+    private lateinit var mumble: ListFragment
     private lateinit var searchBox: EditText
     private var activeTag = "quad"
 
@@ -60,12 +61,15 @@ class MainActivity : AppCompatActivity() {
             ?: ListFragment.newInstance(Module.IDEA)
         und = (fm.findFragmentByTag("und") as? ListFragment)
             ?: ListFragment.newInstance(Module.UNDECIDED)
+        mumble = (fm.findFragmentByTag("mumble") as? ListFragment)
+            ?: ListFragment.newInstance(Module.MUMBLE)
 
         if (fm.findFragmentByTag("quad") == null) {
             fm.beginTransaction()
                 .add(R.id.container, quad, "quad")
                 .add(R.id.container, idea, "idea")
                 .add(R.id.container, und, "und")
+                .add(R.id.container, mumble, "mumble")
                 .commitNow()
         }
 
@@ -77,6 +81,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navQuad -> showOnly("quad")
                 R.id.navIdea -> showOnly("idea")
                 R.id.navUnd -> showOnly("und")
+                R.id.navMumble -> showOnly("mumble")
                 else -> false
             }
         }
@@ -97,7 +102,8 @@ class MainActivity : AppCompatActivity() {
         val map: Map<String, Fragment> = mapOf(
             "quad" to quad,
             "idea" to idea,
-            "und" to und
+            "und" to und,
+            "mumble" to mumble
         )
         supportFragmentManager.beginTransaction().apply {
             map.forEach { (t, f) ->
@@ -117,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         "quad" -> quad
         "idea" -> idea
         "und" -> und
+        "mumble" -> mumble
         else -> quad
     }
 
@@ -126,6 +133,7 @@ class MainActivity : AppCompatActivity() {
             "quad" -> quad.setSearch(q)
             "idea" -> idea.setSearch(q)
             "und" -> und.setSearch(q)
+            "mumble" -> mumble.setSearch(q)
         }
     }
 
@@ -163,12 +171,13 @@ class MainActivity : AppCompatActivity() {
         popup.show()
     }
 
-    /** ⭐ 只看收藏：三区统一切换过滤视图 */
+    /** ⭐ 只看收藏：四区统一切换过滤视图 */
     private fun toggleFavOnly() {
         favOnly = !favOnly
         quad.setFavOnly(favOnly)
         idea.setFavOnly(favOnly)
         und.setFavOnly(favOnly)
+        mumble.setFavOnly(favOnly)
     }
 
     private fun showExportChoice() {
@@ -323,11 +332,12 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /** 任一模块改动后，刷新全部三个 Fragment 的视图并刷新小部件。 */
+    /** 任一模块改动后，刷新全部四个 Fragment 的视图并刷新小部件。 */
     fun refreshAll() {
         quad.refresh()
         idea.refresh()
         und.refresh()
+        mumble.refresh()
         updateWidget()
     }
 

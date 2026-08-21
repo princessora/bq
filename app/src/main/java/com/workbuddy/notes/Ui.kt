@@ -107,40 +107,50 @@ object Ui {
             }
         }
 
-        // 语音信息
+        // 语音信息（未添加时整行隐藏）
         val tvAudio = TextView(context).apply {
             id = R.id.editor_audio_info
             setPadding(0, (6 * dp).toInt(), 0, 0)
             textSize = 13f
-            text = if (!note.audioPath.isNullOrBlank()) {
-                "已添加语音 · ${note.audioDurationMs / 1000} 秒"
-            } else "未添加语音"
+            if (!note.audioPath.isNullOrBlank()) {
+                text = "已添加语音 · ${note.audioDurationMs / 1000} 秒"
+                visibility = View.VISIBLE
+            } else {
+                visibility = View.GONE
+            }
         }
 
-        // 日期信息
+        // 日期信息（未设置时隐藏）
         val tvDate = TextView(context).apply {
             id = R.id.editor_date_info
             setPadding(0, (6 * dp).toInt(), 0, 0)
             textSize = 13f
-            text = if (note.eventDate != null) {
-                "📅 ${note.eventLabel ?: "纪念日"} · ${countdownText(note.eventDate!!)}"
-            } else "未设置日期"
+            if (note.eventDate != null) {
+                text = "📅 ${note.eventLabel ?: "纪念日"} · ${countdownText(note.eventDate!!)}"
+                visibility = View.VISIBLE
+            } else {
+                visibility = View.GONE
+            }
         }
 
-        // 位置信息
+        // 位置信息（未记录时隐藏）
         val tvLoc = TextView(context).apply {
             id = R.id.editor_location_info
             setPadding(0, (6 * dp).toInt(), 0, 0)
             textSize = 13f
-            text = if (!note.locationName.isNullOrBlank() || note.latitude != null) {
-                "📍 ${note.locationName ?: "已记录坐标"}"
-            } else "未记录位置"
+            if (!note.locationName.isNullOrBlank() || note.latitude != null) {
+                text = "📍 ${note.locationName ?: "已记录坐标"}"
+                visibility = View.VISIBLE
+            } else {
+                visibility = View.GONE
+            }
         }
 
-        // 标签
+        // 标签（去掉 EditText 默认下划线，避免误以为是分隔线）
         val etTags = EditText(context).apply {
             id = R.id.editor_tags
             hint = "标签，逗号分隔，如 旅行,待办"
+            background = null
             setText(note.tags ?: "")
             textSize = 13f
             setPadding(0, (8 * dp).toInt(), 0, 0)

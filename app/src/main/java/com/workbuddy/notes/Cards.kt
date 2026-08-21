@@ -31,11 +31,14 @@ object Cards {
         onShare: () -> Unit,
         onUnlock: () -> Unit,
         onLocation: () -> Unit,
-        highlight: String? = null
+        highlight: String? = null,
+        showDone: Boolean = false,
+        onToggleDone: (() -> Unit)? = null
     ): View {
         val view = LayoutInflater.from(context).inflate(R.layout.item_note, null)
 
         val tvText = view.findViewById<TextView>(R.id.tvText)
+        val ivDone = view.findViewById<ImageView>(R.id.ivDone)
         val ivImage = view.findViewById<ImageView>(R.id.ivImage)
         val ivDraw = view.findViewById<ImageView>(R.id.ivDraw)
         val audioRow = view.findViewById<LinearLayout>(R.id.audioRow)
@@ -49,6 +52,15 @@ object Cards {
         val btnDelete = view.findViewById<TextView>(R.id.btnDelete)
         val btnShare = view.findViewById<TextView>(R.id.btnShare)
 
+        // ---- 打勾完成(仅点子/未想清/碎碎念 显示)----
+        if (showDone) {
+            ivDone.visibility = View.VISIBLE
+            ivDone.setImageResource(if (note.done) R.drawable.ic_done else R.drawable.ic_undone)
+            if (onToggleDone != null) ivDone.setOnClickListener { onToggleDone() }
+        } else {
+            ivDone.visibility = View.GONE
+        }
+
         val bg = view.background
         if (bg is GradientDrawable) {
             try {
@@ -56,6 +68,16 @@ object Cards {
             } catch (_: Exception) {
                 // 颜色解析失败则保留默认白底
             }
+        }
+
+        // 完成态视觉淡化
+        if (note.done) {
+            bg?.alpha = 200
+            tvText.alpha = 0.45f
+            tvTags.alpha = 0.45f
+            tvMeta.alpha = 0.45f
+            tvAudioDur.alpha = 0.45f
+            tvText.paintFlags = tvText.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
         }
 
         // ---- 标签 ----

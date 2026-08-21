@@ -2,7 +2,7 @@ package com.workbuddy.notes
 
 import java.util.UUID
 
-enum class Module { QUAD, IDEA, UNDECIDED }
+enum class Module { QUAD, IDEA, UNDECIDED, MUMBLE }
 
 /**
  * 一条便签。借鉴 ANotes 的「便签 + 分类」思路：
@@ -33,6 +33,8 @@ data class Note(
     // ---- ⑤ 置顶 / 收藏 ----
     var pinned: Boolean = false,
     var favorite: Boolean = false,
+    // ---- 「点子/未想清/碎碎念」打勾完成，排序让 done 的便签后移 ----
+    var done: Boolean = false,
     // ---- ④ 标签（逗号分隔的文本，Gson 反序列化后可能为 null） ----
     var tags: String? = null,
     // ---- ⑪ 纪念日 / 生日（epoch 毫秒，null=无） ----
@@ -58,7 +60,8 @@ data class Note(
         val MODULE_TITLE = mapOf(
             Module.QUAD to "四象限归纳",
             Module.IDEA to "点子存放处",
-            Module.UNDECIDED to "未想清楚的事"
+            Module.UNDECIDED to "未想清楚的事",
+            Module.MUMBLE to "碎碎念"
         )
         /** 回收站保留天数 */
         const val TRASH_DAYS = 7

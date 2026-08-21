@@ -330,6 +330,7 @@ class QuadFragment : Fragment() {
         val options = arrayOf(
             "移到「点子存放处」",
             "移到「未想清楚的事」",
+            "移到「碎碎念」",
             "改到其他象限"
         )
         AlertDialog.Builder(requireContext())
@@ -338,7 +339,8 @@ class QuadFragment : Fragment() {
                 when (which) {
                     0 -> { note.module = Module.IDEA; note.quadZone = 1; afterMove() }
                     1 -> { note.module = Module.UNDECIDED; note.quadZone = 1; afterMove() }
-                    2 -> changeZone(note)
+                    2 -> { note.module = Module.MUMBLE; note.quadZone = 1; afterMove() }
+                    3 -> changeZone(note)
                 }
             }
             .show()
