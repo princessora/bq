@@ -350,21 +350,24 @@ object Ui {
     }
 
     /** 编辑弹窗打开期间，刷新语音状态（含播放/停止态）。录音后调用，确保可点击播放 */
-    fun updateAudioPreview(dialog: AlertDialog?, path: String?, durationMs:  Long) {
+    fun updateAudioPreview(dialog: AlertDialog?, path: String?, durationMs: Long) {
         if (dialog == null) return
         val tv = dialog.findViewById<TextView>(R.id.editor_audio_info) ?: return
         if (path.isNullOrBlank()) {
             tv.visibility = View.GONE
-        } else {
-            tv.visibility = View.VISIBLE
-            val ctx = dialog.context
-            val pp = Crypto.plainPath(ctx, path)
-            val playing = AudioPlayer.isPlaying(pp)
-            tv.text = (if (playing) "⏸ 停止" else "▶ 播放") +
-                    " · ${durationMs / 1000} 秒"
-            tv.setOnClickListener {
-                if (pp != null) AudioPlayer.toggle(pp) { updateAudioPreview(dialog, path, durationMs) }
-            }
+            return
+        }
+        tv.visibility = View.VISIBLE
+        val ctx = dialog.context
+        val pp = Crypto.plainPath(ctx, path)
+        val playing = AudioPlayer.isPlaying(pp)
+        tv.text = (if (playing) "⏸ 停止" else "▶ 播放") +
+                " · ${durationMs / 1000} 秒"
+        // 提取 trailing lambda 为本地 val，避免 SAM lambda 内嵌 trailing lambda 编译失败
+        val onToggleDone = { updateAudioPreview(dialog, path, durationMs) }
+        tv.setOnClickListener {
+            val p = Crypto.plainPath(ctx, path)
+            if (p != null) AudioPlayer.toggle(p, onToggleDone)
         }
     }
 
