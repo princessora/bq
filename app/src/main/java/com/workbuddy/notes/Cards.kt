@@ -208,9 +208,14 @@ object Cards {
         if (note.favorite) parts += "⭐"
         if (note.locked) parts += "🔒"
         if (note.eventDate != null) {
-            val cal = Calendar.getInstance().apply { timeInMillis = note.eventDate!! }
-            val lunar = try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
-            parts += "📅${note.eventLabel ?: ""}${Ui.countdownText(note.eventDate!!)}$lunar"
+            // 单次（含旧数据）才追加农历，周期/按间隔已经有 ⏰ 就不再堆农历避免太长
+            val kind = note.eventKind ?: Note.EVENT_KIND_ONCE
+            val line = note.formatEventLine()
+            val lunar = if (kind == Note.EVENT_KIND_ONCE) {
+                val cal = Calendar.getInstance().apply { timeInMillis = note.eventDate!! }
+                try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
+            } else ""
+            parts += line + lunar
         }
         if (note.latitude != null || !note.locationName.isNullOrBlank()) {
             parts += "📍${note.locationName ?: "坐标"}"

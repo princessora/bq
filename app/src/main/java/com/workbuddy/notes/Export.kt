@@ -91,8 +91,10 @@ object ShareUtil {
     private fun buildDateLine(note: Note): String? {
         if (note.eventDate == null) return null
         val cal = java.util.Calendar.getInstance().apply { timeInMillis = note.eventDate!! }
-        val lunar = try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
-        return "📅${note.eventLabel ?: ""}${Ui.countdownText(note.eventDate!!)}$lunar"
+        val lunar = if ((note.eventKind ?: Note.EVENT_KIND_ONCE) == Note.EVENT_KIND_ONCE) {
+            try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
+        } else ""
+        return note.formatEventLine() + lunar
     }
 
     /** 按宽度折行（兼容中英文） */
@@ -279,7 +281,7 @@ object Export {
         if (note.eventDate == null) return null
         val cal = java.util.Calendar.getInstance().apply { timeInMillis = note.eventDate!! }
         val lunar = try { " · ${Lunar.lunarMonthDay(cal)}" } catch (_: Exception) { "" }
-        return "📅${note.eventLabel ?: ""}${Ui.countdownText(note.eventDate!!)}$lunar"
+        return note.formatEventLine() + lunar
     }
 
     private fun paragraph(text: String, bold: Boolean = false): String {

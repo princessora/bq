@@ -168,22 +168,10 @@ class QuadFragment : Fragment() {
         null
     }
 
-    // ---------- 纪念日 ----------
+    // ---------- 纪念日（周期/按间隔/单次 三选一 + 时间） ----------
     private fun showDatePicker() {
-        val now = java.util.Calendar.getInstance()
-        val dp = android.app.DatePickerDialog(
-            requireContext(),
-            { _, y, m, d ->
-                val cal = java.util.Calendar.getInstance().apply { set(y, m, d, 0, 0, 0) }
-                editingNote?.eventDate = cal.timeInMillis
-                editingNote?.eventLabel = "纪念日"
-                Ui.updateDatePreview(editingDialog, editingNote!!)
-            },
-            now.get(java.util.Calendar.YEAR),
-            now.get(java.util.Calendar.MONTH),
-            now.get(java.util.Calendar.DAY_OF_MONTH)
-        )
-        dp.show()
+        val n = editingNote ?: return
+        EventEditor.show(requireContext(), n) { Ui.updateDatePreview(editingDialog, it) }
     }
 
     // ---------- 录音 ----------

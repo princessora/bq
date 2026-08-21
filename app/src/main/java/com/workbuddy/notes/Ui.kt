@@ -136,7 +136,7 @@ object Ui {
             setPadding(0, (6 * dp).toInt(), 0, 0)
             textSize = 13f
             if (note.eventDate != null) {
-                text = "📅 ${note.eventLabel ?: "纪念日"} · ${countdownText(note.eventDate!!)}"
+                text = note.formatEventLine()
                 visibility = View.VISIBLE
             } else {
                 visibility = View.GONE
@@ -369,9 +369,12 @@ object Ui {
     fun updateDatePreview(dialog: AlertDialog?, note: Note) {
         if (dialog == null) return
         val tv = dialog.findViewById<TextView>(R.id.editor_date_info) ?: return
-        tv.text = if (note.eventDate != null) {
-            "📅 ${note.eventLabel ?: "纪念日"} · ${countdownText(note.eventDate!!)}"
-        } else "未设置日期"
+        if (note.eventDate != null) {
+            tv.visibility = View.VISIBLE
+            tv.text = note.formatEventLine()
+        } else {
+            tv.visibility = View.GONE
+        }
     }
 
     /** 编辑弹窗打开期间，刷新位置信息 */
