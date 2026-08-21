@@ -80,34 +80,84 @@ data class Note(
     }
 
     /**
-     * 卡片 / 编辑器统一显示用的日期文案。
-     * - 周期：📅 每天 ⏰ 19:04
-     * - 按间隔：📅 每 3 天 ⏰ 19:04
-     * - 单次：📅 纪念日 · 还有 5 天 ⏰ 19:04
+     * 卡片 / 编辑器 / 导出统一显示用的日期文案。
+     * 无论「周期 / 按间隔 / 单次」，都展示「下次提醒时间」。
      * eventDate 为空时返回空串。
      */
     fun formatEventLine(): String {
         if (eventDate == null) return ""
-        val timeSuffix = eventTime?.let { " ⏰ $it" } ?: ""
+        val now = System.currentTimeMillis()
+        val next = nextRemindAt(now)
+        val kind = eventKind ?: EVENT_KIND_ONCE
+        val typeText = when (kind) {
+            EVENT_KIND_CYCLE -> eventRepeat ?: "每天"
+            EVENT_KIND_INTERVAL -> "每 ${eventIntervalDays ?: 1} 天"
+            else -> eventLabel ?: "纪念日"
+        }
+        val nextTxt = formatNext(next)
+        // 未来且不超过一年，补充「还有 N 天」倒计时，让周期/间隔也有直观预期
+        val extra = if (next != null && next > now) {
+            val days = (next - now) / (24L * 60 * 60 * 1000)
+            if (days in 1..365) "（还有 ${days} 天）" else ""
+        } else ""
+        return "📅 $typeText · 下次 $nextTxt$extra"
+    }
+
+    /**
+     * 计算下一次提醒的绝对时间（epoch 毫秒）。
+     * - 单次且未过期：返回该时间点；已过期返回 null（不再提醒）。
+     * - 周期 / 按间隔：从起始日期起，向前推进到「第一个 >= 现在」的命中时刻。
+     */
+    fun nextRemindAt(now: Long): Long? {
+        val date = eventDate ?: return null
+        val time = eventTime ?: return null
+        val parts = time.split(":")
+        val h = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = date
+            set(java.util.Calendar.HOUR_OF_DAY, h)
+            set(java.util.Calendar.MINUTE, m)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        val base = cal.timeInMillis
         return when (eventKind ?: EVENT_KIND_ONCE) {
-            EVENT_KIND_CYCLE -> "📅 ${eventRepeat ?: "每天"}$timeSuffix"
-            EVENT_KIND_INTERVAL -> "📅 每 ${eventIntervalDays ?: 1} 天$timeSuffix"
-            else -> {
-                val lbl = eventLabel ?: "纪念日"
-                "📅 $lbl · ${countdownText(eventDate!!)}$timeSuffix"
+            EVENT_KIND_ONCE -> if (base >= now) base else null
+            EVENT_KIND_CYCLE -> {
+                val repeat = eventRepeat ?: "每天"
+                val c = java.util.Calendar.getInstance().apply { timeInMillis = base }
+                while (c.timeInMillis < now) {
+                    when (repeat) {
+                        "每天" -> c.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                        "每周" -> c.add(java.util.Calendar.DAY_OF_MONTH, 7)
+                        "每月" -> c.add(java.util.Calendar.MONTH, 1)
+                        "每年" -> c.add(java.util.Calendar.YEAR, 1)
+                        else -> c.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                    }
+                }
+                c.timeInMillis
+            }
+            EVENT_KIND_INTERVAL -> {
+                val step = (eventIntervalDays ?: 1) * 24L * 60 * 60 * 1000
+                var t = base
+                while (t < now) t += step
+                t
             }
         }
     }
 
-    private fun countdownText(target: Long): String {
-        val now = System.currentTimeMillis()
-        val dayMs = 24L * 60 * 60 * 1000
-        val diff = ((target - now) / dayMs).toInt()
-        return when {
-            diff > 0 -> "还有 $diff 天"
-            diff == 0 -> "就是今天"
-            else -> "已过 ${-diff} 天"
-        }
+    private fun formatNext(t: Long?): String {
+        if (t == null) return "已过期"
+        val c = java.util.Calendar.getInstance().apply { timeInMillis = t }
+        return String.format(
+            java.util.Locale.US,
+            "%02d-%02d %02d:%02d",
+            c.get(java.util.Calendar.MONTH) + 1,
+            c.get(java.util.Calendar.DAY_OF_MONTH),
+            c.get(java.util.Calendar.HOUR_OF_DAY),
+            c.get(java.util.Calendar.MINUTE)
+        )
     }
 
     /** 标签列表（安全的非空取值，逗号分隔） */

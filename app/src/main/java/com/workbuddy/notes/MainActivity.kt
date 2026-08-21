@@ -332,13 +332,14 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /** 任一模块改动后，刷新全部四个 Fragment 的视图并刷新小部件。 */
+    /** 任一模块改动后，刷新全部四个 Fragment 的视图、小部件，并重新校准定时提醒。 */
     fun refreshAll() {
         quad.refresh()
         idea.refresh()
         und.refresh()
         mumble.refresh()
         updateWidget()
+        ReminderScheduler.scheduleAll(this)
     }
 
     fun updateWidget() {
