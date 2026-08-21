@@ -23,6 +23,39 @@ object NotesRepository {
     private const val BACKUP_NAME = "notes.json.bak"
     private val gson = Gson()
 
+    /**
+     * 落盘 / 导出前：把「锁定便签」的 text / tags 加密（已加密则跳过，保证幂等、
+     * 可重复导入而不会被二次加密）。内存态的 Note 始终是明文，这里只改动副本。
+     */
+    private fun prepareForStorage(notes: List<Note>): List<Note> = notes.map { note ->
+        if (!note.locked) return@map note
+        note.copy(
+            text = if (Crypto.isEncrypted(note.text)) note.text else enc(note.text),
+            tags = if (note.tags != null && Crypto.isEncrypted(note.tags)) note.tags
+                   else note.tags?.let { enc(it) }
+        )
+    }
+
+    /**
+     * 载入 / 导入后：把「锁定便签」的 text / tags 解密回明文。
+     * 内存态始终明文，UI / 搜索 / 分享逻辑无需改动。
+     */
+    private fun afterLoad(notes: MutableList<Note>) {
+        for (n in notes) {
+            if (!n.locked) continue
+            if (Crypto.isEncrypted(n.text)) n.text = Crypto.decrypt(n.text)
+            if (!n.tags.isNullOrBlank() && Crypto.isEncrypted(n.tags)) n.tags = Crypto.decrypt(n.tags)
+        }
+    }
+
+    /** 加密单字段；极端情况下（如设备不支持 Keystore）加密失败则保留明文，避免丢数据。 */
+    private fun enc(s: String): String = try {
+        Crypto.encrypt(s)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        s
+    }
+
     fun load(context: Context): MutableList<Note> {
         val dir = context.filesDir
         // 1) 主文件优先
@@ -48,7 +81,9 @@ object NotesRepository {
             val json = file.readText(StandardCharsets.UTF_8)
             if (json.isBlank()) return null
             val type = object : TypeToken<MutableList<Note>>() {}.type
-            gson.fromJson<MutableList<Note>>(json, type) ?: return null
+            val list = gson.fromJson<MutableList<Note>>(json, type) ?: return null
+            afterLoad(list)
+            list
         } catch (e: Exception) {
             null
         }
@@ -56,7 +91,7 @@ object NotesRepository {
 
     fun save(context: Context, notes: List<Note>) {
         try {
-            val json = gson.toJson(notes)
+            val json = toJson(notes)
             val dir = context.filesDir
             val file = File(dir, FILE_NAME)
 
@@ -78,15 +113,15 @@ object NotesRepository {
         }
     }
 
-    /** 导出备份用：把便签列表序列化为 JSON 字符串 */
-    fun toJson(notes: List<Note>): String = gson.toJson(notes)
+    /** 导出备份用：把便签列表序列化为 JSON 字符串（锁定便签已加密，备份包同样是密文） */
+    fun toJson(notes: List<Note>): String = gson.toJson(prepareForStorage(notes))
 
-    /** 导入备份用：解析 JSON 字符串为便签列表（解析失败返回空表） */
+    /** 导入备份用：解析 JSON 字符串为便签列表（解析失败返回空表；密文会自动解密） */
     fun fromJson(json: String): MutableList<Note> = try {
-        gson.fromJson<MutableList<Note>>(
-            json,
-            object : TypeToken<MutableList<Note>>() {}.type
-        ) ?: mutableListOf()
+        val type = object : TypeToken<MutableList<Note>>() {}.type
+        val list = gson.fromJson<MutableList<Note>>(json, type) ?: mutableListOf()
+        afterLoad(list)
+        list
     } catch (e: Exception) {
         mutableListOf()
     }
