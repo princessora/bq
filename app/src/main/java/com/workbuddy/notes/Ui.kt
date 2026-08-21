@@ -107,14 +107,24 @@ object Ui {
             }
         }
 
-        // 语音信息（未添加时整行隐藏）
+        // 语音信息（未添加时整行隐藏）；解锁后点此即可播放/停止加密语音
         val tvAudio = TextView(context).apply {
             id = R.id.editor_audio_info
             setPadding(0, (6 * dp).toInt(), 0, 0)
             textSize = 13f
             if (!note.audioPath.isNullOrBlank()) {
-                text = "已添加语音 · ${note.audioDurationMs / 1000} 秒"
                 visibility = View.VISIBLE
+                val refresh = {
+                    val pp = Crypto.plainPath(context, note.audioPath)
+                    val playing = AudioPlayer.isPlaying(pp)
+                    text = (if (playing) "⏸ 停止" else "▶ 播放") +
+                            " · ${note.audioDurationMs / 1000} 秒"
+                }
+                refresh()
+                setOnClickListener {
+                    val pp = Crypto.plainPath(context, note.audioPath)
+                    if (pp != null) AudioPlayer.toggle(pp) { refresh() }
+                }
             } else {
                 visibility = View.GONE
             }
@@ -264,6 +274,17 @@ object Ui {
                 false
             }
         }
+        // 关闭弹窗时停止播放，并删掉解密出的明文缓存（图片/涂鸦/语音），
+        // 避免明文附件长期留在 cacheDir（均为 App 私有目录，仅供本次查看用）
+        dialog.setOnDismissListener {
+            AudioPlayer.stop()
+            listOf(note.imagePath, note.drawingPath, note.audioPath).forEach { p ->
+                if (!p.isNullOrBlank()) {
+                    val cache = File(context.cacheDir, "dec_" + File(p).name)
+                    if (cache.exists()) cache.delete()
+                }
+            }
+        }
         return dialog
     }
 
@@ -330,11 +351,18 @@ object Ui {
         }
     }
 
-    /** 编辑弹窗打开期间，刷新语音状态 */
+    /** 编辑弹窗打开期间，刷新语音状态（含播放/停止态） */
     fun updateAudioPreview(dialog: AlertDialog?, path: String?, durationMs: Long) {
         if (dialog == null) return
         val tv = dialog.findViewById<TextView>(R.id.editor_audio_info) ?: return
-        tv.text = if (path.isNullOrBlank()) "未添加语音" else "已添加语音 · ${durationMs / 1000} 秒"
+        if (path.isNullOrBlank()) {
+            tv.visibility = View.GONE
+        } else {
+            tv.visibility = View.VISIBLE
+            val playing = AudioPlayer.isPlaying(Crypto.plainPath(dialog.context, path))
+            tv.text = (if (playing) "⏸ 停止" else "▶ 播放") +
+                    " · ${durationMs / 1000} 秒"
+        }
     }
 
     /** 编辑弹窗打开期间，刷新日期信息 */

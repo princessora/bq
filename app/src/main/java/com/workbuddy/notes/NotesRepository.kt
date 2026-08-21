@@ -84,12 +84,19 @@ object NotesRepository {
     private fun transformInPlace(f: File, op: (File, File) -> Unit) {
         val tmp = File(f.parent, f.name + ".xform.tmp")
         op(f, tmp)
-        if (tmp.renameTo(f)) {
-            // 替换成功
-        } else {
-            // 极少数 rename 失败 → 直接覆盖写兜底
-            try { f.writeBytes(tmp.readBytes()) } catch (_: Exception) {}
-            tmp.delete()
+        if (tmp.exists()) {
+            try {
+                if (tmp.renameTo(f)) {
+                    // 同目录 rename 是原子替换，优先走这里
+                } else {
+                    // 极少数 rename 失败（如跨挂载）→ 流式覆盖写兜底，避免大文件 readBytes 撑爆内存
+                    tmp.copyTo(f, overwrite = true)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace() // 极端失败保留原文件，避免丢附件
+            } finally {
+                tmp.delete()
+            }
         }
     }
 

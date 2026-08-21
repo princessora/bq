@@ -136,6 +136,7 @@ object Crypto {
                 throw java.io.IOException("not an encrypted file")
             }
             val ivLen = inp.read()
+            if (ivLen <= 0 || ivLen > 64) throw java.io.IOException("bad iv length: $ivLen")
             val iv = ByteArray(ivLen) { inp.read().toByte() }
             val cipher = Cipher.getInstance(TRANSFORM).apply {
                 init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(GCM_TAG_BITS, iv))
