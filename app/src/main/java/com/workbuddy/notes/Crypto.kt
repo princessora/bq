@@ -142,7 +142,7 @@ object Crypto {
                 init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(GCM_TAG_BITS, iv))
             }
             CipherInputStream(inp, cipher).use { cis ->
-                FileOutputStream(dst).use { it.copyTo(cis) }
+                FileOutputStream(dst).use { cis.copyTo(it) }
             }
         }
     }
