@@ -44,7 +44,6 @@ object Ui {
     ): AlertDialog {
         val dp = context.resources.displayMetrics.density
         val initialText = note.text
-        var saved = false
 
         val scroll = ScrollView(context).apply {
             setPadding((16 * dp).toInt(), (4 * dp).toInt(), (16 * dp).toInt(), 0)
@@ -240,7 +239,6 @@ object Ui {
             .setTitle(title)
             .setView(scroll)
             .setPositiveButton("保存") { _, _ ->
-                saved = true
                 note.text = et.text.toString().trim()
                 note.tags = etTags.text.toString().trim()
                 note.pinned = cbPin.isChecked
@@ -351,17 +349,22 @@ object Ui {
         }
     }
 
-    /** 编辑弹窗打开期间，刷新语音状态（含播放/停止态） */
-    fun updateAudioPreview(dialog: AlertDialog?, path: String?, durationMs: Long) {
+    /** 编辑弹窗打开期间，刷新语音状态（含播放/停止态）。录音后调用，确保可点击播放 */
+    fun updateAudioPreview(dialog: AlertDialog?, path: String?, durationMs:  Long) {
         if (dialog == null) return
         val tv = dialog.findViewById<TextView>(R.id.editor_audio_info) ?: return
         if (path.isNullOrBlank()) {
             tv.visibility = View.GONE
         } else {
             tv.visibility = View.VISIBLE
-            val playing = AudioPlayer.isPlaying(Crypto.plainPath(dialog.context, path))
+            val ctx = dialog.context
+            val pp = Crypto.plainPath(ctx, path)
+            val playing = AudioPlayer.isPlaying(pp)
             tv.text = (if (playing) "⏸ 停止" else "▶ 播放") +
                     " · ${durationMs / 1000} 秒"
+            tv.setOnClickListener {
+                if (pp != null) AudioPlayer.toggle(pp) { updateAudioPreview(dialog, path, durationMs) }
+            }
         }
     }
 
