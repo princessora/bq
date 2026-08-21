@@ -149,6 +149,7 @@ data class Note(
                 if (guard >= 365000) return null
                 t
             }
+            else -> null // 未知 / 脏数据：兜底返回 null，避免编译报错
         }
     }
 

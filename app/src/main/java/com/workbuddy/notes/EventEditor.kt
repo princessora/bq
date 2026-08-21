@@ -51,6 +51,11 @@ object EventEditor {
         var time: String = note.eventTime ?: "08:00"
         var label: String = note.eventLabel ?: "纪念日"
 
+        // 用 var 持有 refreshBody（不是 local fun），解决 mkDateBtn/mkTimeBtn 与
+        // refreshBody 互递归 + 跨 lambda 引用导致的 KT-13674「Unresolved reference」。
+        // 所有回调点（包括 tab/日期/时间按钮的 setOnClickListener）都通过这个 var 访问。
+        var refreshBody: () -> Unit = {}
+
         val pad = (16 * dp).toInt()
         val rowGap = (6 * dp).toInt()
 
@@ -168,7 +173,7 @@ object EventEditor {
             }
         }
 
-        fun refreshBody() {
+        refreshBody = {
             tvSub.text = fmtSubtitle()
             body.removeAllViews()
             when (kind) {
