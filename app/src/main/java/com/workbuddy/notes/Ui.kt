@@ -86,7 +86,7 @@ object Ui {
             maxHeight = (180 * dp).toInt()
         }
         if (!note.imagePath.isNullOrBlank()) {
-            Media.decodeSampled(note.imagePath, 512, 512)?.let {
+            Media.decodeSampled(Crypto.plainPath(context, note.imagePath), 512, 512)?.let {
                 ivPreview.setImageBitmap(it)
                 ivPreview.visibility = View.VISIBLE
             }
@@ -101,7 +101,7 @@ object Ui {
             maxHeight = (160 * dp).toInt()
         }
         if (!note.drawingPath.isNullOrBlank()) {
-            Media.decodeSampled(note.drawingPath, 512, 512)?.let {
+            Media.decodeSampled(Crypto.plainPath(context, note.drawingPath), 512, 512)?.let {
                 ivDraw.setImageBitmap(it)
                 ivDraw.visibility = View.VISIBLE
             }
@@ -309,7 +309,7 @@ object Ui {
         if (path.isNullOrBlank()) {
             iv.visibility = View.GONE
         } else {
-            Media.decodeSampled(path, 512, 512)?.let {
+            Media.decodeSampled(Crypto.plainPath(dialog.context, path), 512, 512)?.let {
                 iv.setImageBitmap(it)
                 iv.visibility = View.VISIBLE
             }
@@ -323,7 +323,7 @@ object Ui {
         if (path.isNullOrBlank()) {
             iv.visibility = View.GONE
         } else {
-            Media.decodeSampled(path, 512, 512)?.let {
+            Media.decodeSampled(Crypto.plainPath(dialog.context, path), 512, 512)?.let {
                 iv.setImageBitmap(it)
                 iv.visibility = View.VISIBLE
             }

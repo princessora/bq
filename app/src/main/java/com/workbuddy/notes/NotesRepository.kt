@@ -56,6 +56,43 @@ object NotesRepository {
         s
     }
 
+    /**
+     * 按「锁定」状态归一化附件文件：锁定⇄密文、未锁定⇄明文。
+     * 这样磁盘状态与锁定标志始终一致——卡片（未锁定）可直接 decodeSampled，
+     * 编辑弹窗（锁定）走 Crypto.plainPath 按需解密。已一致则跳过，幂等、可反复保存。
+     */
+    private fun normalizeAttachments(notes: List<Note>) {
+        for (n in notes) {
+            listOf(n.imagePath, n.audioPath, n.drawingPath).forEach { p ->
+                if (p.isNullOrBlank()) return@forEach
+                val f = File(p)
+                if (!f.exists() || !f.isFile) return@forEach
+                val encrypted = Crypto.isEncryptedFile(f)
+                try {
+                    when {
+                        n.locked && !encrypted -> transformInPlace(f) { src, dst -> Crypto.encryptFile(src, dst) }
+                        !n.locked && encrypted -> transformInPlace(f) { src, dst -> Crypto.decryptFile(src, dst) }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace() // 极端失败保留原文件，避免丢附件
+                }
+            }
+        }
+    }
+
+    /** 把 [op]（加密/解密）结果以临时文件落盘，再原子替换为原路径。 */
+    private fun transformInPlace(f: File, op: (File, File) -> Unit) {
+        val tmp = File(f.parent, f.name + ".xform.tmp")
+        op(f, tmp)
+        if (tmp.renameTo(f)) {
+            // 替换成功
+        } else {
+            // 极少数 rename 失败 → 直接覆盖写兜底
+            try { f.writeBytes(tmp.readBytes()) } catch (_: Exception) {}
+            tmp.delete()
+        }
+    }
+
     fun load(context: Context): MutableList<Note> {
         val dir = context.filesDir
         // 1) 主文件优先
@@ -91,6 +128,9 @@ object NotesRepository {
 
     fun save(context: Context, notes: List<Note>) {
         try {
+            // 落盘前：把「锁定便签」的附件加密、把「未锁定便签」的附件恢复明文，
+            // 让磁盘状态与锁定标志始终一致（幂等，已一致则跳过，不重复加解密）。
+            normalizeAttachments(notes)
             val json = toJson(notes)
             val dir = context.filesDir
             val file = File(dir, FILE_NAME)
