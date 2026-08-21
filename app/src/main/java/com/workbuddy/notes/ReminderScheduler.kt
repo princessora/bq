@@ -17,7 +17,10 @@ object ReminderScheduler {
         val notes = NotesRepository.load(context)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         for (note in notes) {
-            if (note.deleted || note.eventDate == null || note.eventTime == null) continue
+            // 软删除 / 未设时间 / 锁定便签 都不参与提醒：
+            // 锁定便签正文是加密内容，绝不允许出现在系统通知栏（避免明文泄露）
+            if (note.deleted || note.locked) continue
+            if (note.eventDate == null || note.eventTime == null) continue
             val pi = buildIntent(context, note)
             try {
                 am.cancel(pi)
@@ -49,13 +52,14 @@ object ReminderScheduler {
     private fun buildIntent(context: Context, note: Note): PendingIntent {
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             action = ReminderReceiver.ACTION
+            putExtra(ReminderReceiver.EXTRA_NOTE_ID, note.id)
             putExtra(ReminderReceiver.EXTRA_TITLE, note.eventLabel ?: "札记提醒")
             putExtra(
                 ReminderReceiver.EXTRA_BODY,
                 note.text.takeIf { it.isNotBlank() } ?: "该打卡 / 纪念日到了"
             )
         }
-        // requestCode 用 id 的 hash，同一便签可覆盖旧闹钟；崩溃概率极低
+        // requestCode 用 id 的 hash，同一便签可覆盖旧闹钟
         return PendingIntent.getBroadcast(
             context,
             note.id.hashCode(),

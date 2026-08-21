@@ -139,9 +139,14 @@ data class Note(
                 c.timeInMillis
             }
             EVENT_KIND_INTERVAL -> {
-                val step = (eventIntervalDays ?: 1) * 24L * 60 * 60 * 1000
+                val stepDays = eventIntervalDays ?: 1
+                if (stepDays <= 0) return null
+                val step = stepDays * 24L * 60 * 60 * 1000
                 var t = base
-                while (t < now) t += step
+                // 防御：脏数据（极小概率）导致死循环时，最多推进 365000 次后放弃
+                var guard = 0
+                while (t < now && guard < 365000) { t += step; guard++ }
+                if (guard >= 365000) return null
                 t
             }
         }

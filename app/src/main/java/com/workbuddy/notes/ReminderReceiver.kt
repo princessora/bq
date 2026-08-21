@@ -11,11 +11,12 @@ import androidx.core.app.NotificationCompat
 
 /**
  * 接收定时闹钟广播，弹出系统通知。
- * 通知内容只展示便签标题/正文摘要，不泄露锁定便签的内容（锁定便签不会进入提醒调度）。
+ * 注意：锁定便签不会被调度（见 ReminderScheduler），因此通知内容不会泄露加密正文。
  */
 class ReminderReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION = "com.workbuddy.notes.REMIND"
+        const val EXTRA_NOTE_ID = "noteId"
         const val EXTRA_TITLE = "title"
         const val EXTRA_BODY = "body"
         const val CHANNEL_ID = "notes_reminder"
@@ -23,6 +24,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION) return
+        val noteId = intent.getStringExtra(EXTRA_NOTE_ID) ?: ""
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "札记提醒"
         val body = intent.getStringExtra(EXTRA_BODY) ?: "该打卡 / 纪念日到了"
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -47,7 +49,11 @@ class ReminderReceiver : BroadcastReceiver() {
             .setContentIntent(openApp)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
-        // 用标题 hash 作 id，避免不同提醒互相覆盖；冲突概率极低可接受
-        nm.notify(title.hashCode(), notification)
+        // 用 noteId 的 hash 作通知 id，与闹钟 requestCode 一一对应，互不覆盖
+        nm.notify(noteId.hashCode(), notification)
+
+        // 一次性精确闹钟触发后系统会自动移除，需重新挂接下一次（周期/按间隔才能持续响）
+        // 软删除或已改时间的便签会在 scheduleAll 内部被正确跳过/更新
+        ReminderScheduler.scheduleAll(context)
     }
 }
