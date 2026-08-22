@@ -40,6 +40,9 @@ object Crypto {
     private const val FILE_MAGIC = "ZJENCF01"
     private val FILE_MAGIC_BYTES = FILE_MAGIC.toByteArray(Charsets.US_ASCII)
 
+    /** 解密后落盘的明文缓存文件集合；离开页面时统一清理，避免明文长期驻留 cacheDir。 */
+    private val pendingPlain = mutableSetOf<File>()
+
     private val keyStore: KeyStore by lazy {
         KeyStore.getInstance(PROVIDER).apply { load(null) }
     }
@@ -161,10 +164,21 @@ object Crypto {
         val cache = File(context.cacheDir, "dec_" + f.name)
         return try {
             decryptFile(f, cache)
+            pendingPlain.add(cache)
             cache.absolutePath
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
+    }
+
+    /**
+     * 清理所有解密后的明文缓存文件。应在离开页面（如 Activity.onPause）时调用，
+     * 确保明文不长期驻留磁盘，恢复「静态只有密文」的安全保证。
+     * 调用时机：图片已解码为内存 Bitmap、语音已停止播放，删除源文件不影响正在显示的内容。
+     */
+    fun cleanupDecryptedCache() {
+        pendingPlain.forEach { f -> try { f.delete() } catch (_: Exception) {} }
+        pendingPlain.clear()
     }
 }

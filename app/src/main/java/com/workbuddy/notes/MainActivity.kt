@@ -395,6 +395,8 @@ class MainActivity : AppCompatActivity() {
         AppLock.onPause()
         // 离开页面/退后台时停止语音播放，避免声音残留
         AudioPlayer.stop()
+        // 清理解密后的明文缓存（锁定便签附件），避免明文长期留在 cacheDir
+        Crypto.cleanupDecryptedCache()
     }
 
     private fun showAppLock() {

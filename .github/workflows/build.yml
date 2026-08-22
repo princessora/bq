@@ -31,7 +31,9 @@ jobs:
           cache-disabled: true
 
       - name: Build Debug APK
-        run: gradle :app:assembleDebug
+        # --continue：一次编译尽量暴露全部 Kotlin 错误，而不是遇首个严重错就停，
+        # 避免「修一个才露下一个」的反复（参考 r42→r43 的踩坑）。
+        run: gradle :app:assembleDebug --continue
 
       # 给 APK 加上递增的 run 编号后缀（如 app-debug-r18.apk），
       # 避免每次下载解压后都叫同名覆盖导致 vivo 拒绝安装。
