@@ -34,14 +34,20 @@ object BookkeepingRepository {
     }
 
     /** 读取并解析一个 JSON 文件；不存在/空/解析失败都返回 null（不抛异常） */
-    private fun readList(file: File): MutableList<Transaction>? = try {
-        if (!file.exists()) return null
-        val json = file.readText(StandardCharsets.UTF_8)
-        if (json.isBlank()) return null
-        val type = object : TypeToken<MutableList<Transaction>>() {}.type
-        gson.fromJson<MutableList<Transaction>>(json, type) ?: return null
-    } catch (e: Exception) {
-        null
+    private fun readList(file: File): MutableList<Transaction>? {
+        return try {
+            if (!file.exists()) null
+            else {
+                val json = file.readText(StandardCharsets.UTF_8)
+                if (json.isBlank()) null
+                else {
+                    val type = object : TypeToken<MutableList<Transaction>>() {}.type
+                    gson.fromJson<MutableList<Transaction>>(json, type)
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun save(context: Context, list: List<Transaction>) {
