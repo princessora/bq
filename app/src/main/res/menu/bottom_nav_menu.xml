@@ -16,4 +16,8 @@
         android:id="@+id/navMumble"
         android:icon="@drawable/ic_mumble"
         android:title="@string/navMumble" />
+    <item
+        android:id="@+id/navBook"
+        android:icon="@drawable/ic_book"
+        android:title="@string/navBook" />
 </menu>

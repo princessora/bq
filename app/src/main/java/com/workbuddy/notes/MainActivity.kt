@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var idea: ListFragment
     private lateinit var und: ListFragment
     private lateinit var mumble: ListFragment
+    private lateinit var book: BookkeepingFragment
     private lateinit var searchBox: EditText
     private var activeTag = "quad"
 
@@ -46,6 +47,8 @@ class MainActivity : AppCompatActivity() {
 
         // 初始化共享数据层：三个 Fragment 读写同一份列表，杜绝互相覆盖
         NotesStore.init(this)
+        // 记账数据层（同范式）
+        BookkeepingStore.init(this)
         // 启动时顺手清理过期回收站项目
         purgeExpiredTrash()
         // 每日数据快照归档（保留最近 7 天，防主文件+备份同时损坏的极端情况）
@@ -63,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             ?: ListFragment.newInstance(Module.UNDECIDED)
         mumble = (fm.findFragmentByTag("mumble") as? ListFragment)
             ?: ListFragment.newInstance(Module.MUMBLE)
+        book = (fm.findFragmentByTag("book") as? BookkeepingFragment) ?: BookkeepingFragment()
 
         if (fm.findFragmentByTag("quad") == null) {
             fm.beginTransaction()
@@ -70,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                 .add(R.id.container, idea, "idea")
                 .add(R.id.container, und, "und")
                 .add(R.id.container, mumble, "mumble")
+                .add(R.id.container, book, "book")
                 .commitNow()
         }
 
@@ -82,6 +87,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navIdea -> showOnly("idea")
                 R.id.navUnd -> showOnly("und")
                 R.id.navMumble -> showOnly("mumble")
+                R.id.navBook -> showOnly("book")
                 else -> false
             }
         }
@@ -103,7 +109,8 @@ class MainActivity : AppCompatActivity() {
             "quad" to quad,
             "idea" to idea,
             "und" to und,
-            "mumble" to mumble
+            "mumble" to mumble,
+            "book" to book
         )
         supportFragmentManager.beginTransaction().apply {
             map.forEach { (t, f) ->
@@ -124,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         "idea" -> idea
         "und" -> und
         "mumble" -> mumble
+        "book" -> book
         else -> quad
     }
 
