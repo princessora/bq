@@ -346,6 +346,7 @@ class MainActivity : AppCompatActivity() {
         idea.refresh()
         und.refresh()
         mumble.refresh()
+        book.refresh()
         updateWidget()
         ReminderScheduler.scheduleAll(this)
     }
