@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     private var activeTag = "quad"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // super 必须最先调，否则会抛 SuperNotCalledException（崩溃页自身也会被自身抓到）
+        super.onCreate(savedInstanceState)
         // 崩溃恢复：若上次启动崩溃已被捕获记录，直接展示堆栈并结束，
         // 避免再次触发同一崩溃形成死循环（不放行后续初始化）
         if (CrashReporter.peek(this)) {
@@ -46,12 +48,6 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
-        // 深色模式：必须在 setContentView 前设定
-        AppCompatDelegate.setDefaultNightMode(
-            if (AppSettings.isDark(this)) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
-        super.onCreate(savedInstanceState)
 
         // 初始化共享数据层：三个 Fragment 读写同一份列表，杜绝互相覆盖
         NotesStore.init(this)
