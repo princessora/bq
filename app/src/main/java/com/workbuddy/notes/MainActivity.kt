@@ -107,6 +107,12 @@ class MainActivity : AppCompatActivity() {
         })
 
         findViewById<Button>(R.id.menuBtn).setOnClickListener { showMenu(it) }
+
+        // 首次启动 → 自动弹一次新手引导；立即标记已展示，避免按返回键后再 onResume 二次弹
+        if (!AppSettings.isGuideShown(this)) {
+            AppSettings.markGuideShown(this)
+            startActivity(Intent(this, GuideActivity::class.java))
+        }
     }
 
     private fun showOnly(tag: String): Boolean {
@@ -166,6 +172,7 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 3, 0, if (AppSettings.isDark(this)) "☀ 日间模式" else "🌙 夜间模式")
         popup.menu.add(0, 4, 0, "🔒 隐私锁")
         popup.menu.add(0, 5, 0, "ℹ 关于")
+        popup.menu.add(0, 8, 0, "💡 新手引导")
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 1 -> startActivity(Intent(this, RecycleBinActivity::class.java))
@@ -181,6 +188,7 @@ class MainActivity : AppCompatActivity() {
                 3 -> toggleDark()
                 4 -> showPrivacyLock()
                 5 -> showAbout()
+                8 -> startActivity(Intent(this, GuideActivity::class.java))
             }
             true
         }

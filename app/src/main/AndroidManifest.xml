@@ -33,6 +33,10 @@
             android:name=".RecycleBinActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".GuideActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name=".NotesWidgetProvider"

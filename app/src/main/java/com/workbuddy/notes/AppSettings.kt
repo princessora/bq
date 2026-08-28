@@ -12,6 +12,7 @@ object AppSettings {
     private const val KEY_DARK = "dark_mode"
     private const val KEY_LOCK_ON = "lock_enabled"
     private const val KEY_PIN = "lock_pin_hash"
+    private const val KEY_GUIDE_SHOWN = "guide_shown"
 
     private fun prefs(ctx: Context): SharedPreferences =
         ctx.getSharedPreferences(NAME, Context.MODE_PRIVATE)
@@ -35,5 +36,12 @@ object AppSettings {
     fun hashPin(pin: String): String {
         val salted = "zaji_${pin}_2026"
         return Integer.toHexString(salted.hashCode())
+    }
+
+    /** 新手引导是否已经向用户展示过（首次启动自动弹一次） */
+    fun isGuideShown(ctx: Context): Boolean = prefs(ctx).getBoolean(KEY_GUIDE_SHOWN, false)
+
+    fun markGuideShown(ctx: Context) {
+        prefs(ctx).edit().putBoolean(KEY_GUIDE_SHOWN, true).apply()
     }
 }
