@@ -39,6 +39,13 @@ class MainActivity : AppCompatActivity() {
     private var activeTag = "quad"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 崩溃恢复：若上次启动崩溃已被捕获记录，直接展示堆栈并结束，
+        // 避免再次触发同一崩溃形成死循环（不放行后续初始化）
+        if (CrashReporter.peek(this)) {
+            CrashReporter.launch(this)
+            finish()
+            return
+        }
         // 深色模式：必须在 setContentView 前设定
         AppCompatDelegate.setDefaultNightMode(
             if (AppSettings.isDark(this)) AppCompatDelegate.MODE_NIGHT_YES
