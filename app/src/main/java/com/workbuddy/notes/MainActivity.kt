@@ -96,7 +96,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.navUnd -> showOnly("und")
                 R.id.navMumble -> showOnly("mumble")
                 R.id.navBook -> showOnly("book")
-                R.id.navVault -> showOnly("vault")
                 else -> false
             }
         }
@@ -175,6 +174,7 @@ class MainActivity : AppCompatActivity() {
         popup.menu.add(0, 3, 0, if (AppSettings.isDark(this)) "☀ 日间模式" else "🌙 夜间模式")
         popup.menu.add(0, 4, 0, "🔒 隐私锁")
         popup.menu.add(0, 5, 0, "ℹ 关于")
+        popup.menu.add(0, 9, 0, "🔐 密码本")
         popup.menu.add(0, 8, 0, "💡 新手引导")
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -191,6 +191,7 @@ class MainActivity : AppCompatActivity() {
                 3 -> toggleDark()
                 4 -> showPrivacyLock()
                 5 -> showAbout()
+                9 -> showOnly("vault")
                 8 -> startActivity(Intent(this, GuideActivity::class.java))
             }
             true
