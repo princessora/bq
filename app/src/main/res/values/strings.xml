@@ -5,5 +5,6 @@
     <string name="navUnd">未想清</string>
     <string name="navMumble">碎碎念</string>
     <string name="navBook">记账</string>
+    <string name="navVault">密码本</string>
     <string name="appwidget_name">札记·速记</string>
 </resources>

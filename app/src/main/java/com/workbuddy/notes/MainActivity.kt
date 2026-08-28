@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var und: ListFragment
     private lateinit var mumble: ListFragment
     private lateinit var book: BookkeepingFragment
+    private lateinit var vault: PasswordFragment
     private lateinit var searchBox: EditText
     private var activeTag = "quad"
 
@@ -49,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         NotesStore.init(this)
         // 记账数据层（同范式）
         BookkeepingStore.init(this)
+        // 密码本数据层（整库加密，同范式）
+        PasswordStore.init(this)
         // 启动时顺手清理过期回收站项目
         purgeExpiredTrash()
         // 每日数据快照归档（保留最近 7 天，防主文件+备份同时损坏的极端情况）
@@ -67,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         mumble = (fm.findFragmentByTag("mumble") as? ListFragment)
             ?: ListFragment.newInstance(Module.MUMBLE)
         book = (fm.findFragmentByTag("book") as? BookkeepingFragment) ?: BookkeepingFragment()
+        vault = (fm.findFragmentByTag("vault") as? PasswordFragment) ?: PasswordFragment()
 
         if (fm.findFragmentByTag("quad") == null) {
             fm.beginTransaction()
@@ -75,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                 .add(R.id.container, und, "und")
                 .add(R.id.container, mumble, "mumble")
                 .add(R.id.container, book, "book")
+                .add(R.id.container, vault, "vault")
                 .commitNow()
         }
 
@@ -88,6 +93,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navUnd -> showOnly("und")
                 R.id.navMumble -> showOnly("mumble")
                 R.id.navBook -> showOnly("book")
+                R.id.navVault -> showOnly("vault")
                 else -> false
             }
         }
@@ -110,7 +116,8 @@ class MainActivity : AppCompatActivity() {
             "idea" to idea,
             "und" to und,
             "mumble" to mumble,
-            "book" to book
+            "book" to book,
+            "vault" to vault
         )
         supportFragmentManager.beginTransaction().apply {
             map.forEach { (t, f) ->
@@ -132,6 +139,7 @@ class MainActivity : AppCompatActivity() {
         "und" -> und
         "mumble" -> mumble
         "book" -> book
+        "vault" -> vault
         else -> quad
     }
 
@@ -347,6 +355,7 @@ class MainActivity : AppCompatActivity() {
         und.refresh()
         mumble.refresh()
         book.refresh()
+        vault.refresh()
         updateWidget()
         ReminderScheduler.scheduleAll(this)
     }

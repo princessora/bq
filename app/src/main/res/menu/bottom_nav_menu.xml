@@ -20,4 +20,8 @@
         android:id="@+id/navBook"
         android:icon="@drawable/ic_book"
         android:title="@string/navBook" />
+    <item
+        android:id="@+id/navVault"
+        android:icon="@drawable/ic_lock"
+        android:title="@string/navVault" />
 </menu>
